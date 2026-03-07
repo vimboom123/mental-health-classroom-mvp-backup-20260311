@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>S.H.I.T-style Manuscript</title>
+  <style>
+    @page { size: A4; margin: 16mm 14mm 18mm 14mm; }
+    body {
+      font-family: "Times New Roman", "Songti SC", "STSong", serif;
+      margin: 0;
+      color: #222;
+      line-height: 1.45;
+      font-size: 12px;
+      position: relative;
+    }
+    .page {
+      position: relative;
+      min-height: 260mm;
+    }
+    .watermark {
+      position: absolute;
+      inset: 30mm 0 20mm 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .wm-line {
+      color: rgba(186, 36, 36, 0.12);
+      font-size: 42px;
+      font-weight: 700;
+      transform: rotate(-23deg);
+      white-space: nowrap;
+      margin: 42px 0;
+      text-align: center;
+    }
+    .content { position: relative; z-index: 1; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+    .logo { height: 36px; }
+    .badge { font-size: 26px; }
+    .title {
+      text-align: center;
+      color: #8f2f8f;
+      font-size: 28px;
+      line-height: 1.2;
+      margin: 10px 0 12px;
+      font-weight: 700;
+    }
+    .meta {
+      text-align: center;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .sec {
+      color: #8f2f8f;
+      font-weight: 700;
+      margin-top: 10px;
+      margin-bottom: 3px;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .twocol {
+      column-count: 2;
+      column-gap: 18px;
+      text-align: justify;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .twocol p { margin: 0 0 8px 0; }
+    .banner {
+      margin-top: 14px;
+      background: #d93b3b;
+      color: #fff;
+      text-align: center;
+      padding: 10px 8px;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      line-height: 1.35;
+    }
+    .small { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="watermark">
+      <div class="wm-line">本内容纯属整活，不代表任何学术观点或现实指导建议</div>
+      <div class="wm-line">S.H.I.T JOURNAL PREPRINT</div>
+      <div class="wm-line">请保持理智，切勿模仿</div>
+      <div class="wm-line">S.H.I.T JOURNAL PREPRINT</div>
+      <div class="wm-line">本内容纯属整活，不代表任何学术观点或现实指导建议</div>
+    </div>
+
+    <div class="content">
+      <div class="top">
+        <img src="LOGO2.png" class="logo" alt="logo" />
+        <div class="badge">💩</div>
+      </div>
+
+      <div class="title">从“技术狂欢”到“生产力停滞”：<br>东亚 AI 工具热潮中的表演性采纳与结构性失配（2025–2026）</div>
+
+      <div class="meta">
+        作者：李某某（虚构）<br>
+        单位：数字社会与平台治理研究中心（虚构）<br>
+        Email: 2085554236@qq.com
+      </div>
+
+      <div class="sec">ABSTRACT / 摘要</div>
+      <div class="small">
+        本研究讨论东亚地区 2025–2026 年 AI 工具热潮中的“高接入、低留存、弱落地”现象。
+        通过对 1,204 条跨平台公开语料进行事件链分析，本文发现：多数用户在接入阶段活跃，
+        但在任务稳定复用阶段迅速流失。问题核心并不在工具能力不足，而在平台激励偏向即时展示，
+        与真实工作流所需的连续学习之间存在结构性错位。
+      </div>
+
+      <div class="sec">INDEX TERMS / 关键词</div>
+      <div class="small">东亚；AI 扩散；表演性采纳；平台激励；工具失配；数字劳动</div>
+
+      <div class="sec">IMPACT STATEMENT / 影响声明</div>
+      <div class="small">
+        本文将“AI 跟风”从道德化指责转回机制分析，指出平台可见性逻辑对学习行为的挤压效应。
+        这一视角有助于解释为何同一代工具能同时制造高热度与低落地，并为组织层面的采用策略提供可操作框架。
+      </div>
+
+      <div class="sec">1. INTRODUCTION / 引言</div>
+      <div class="twocol">
+        <p>从 DeepSeek 到 OpenClaw，东亚互联网在不到两年内完成了一轮高度典型的技术话题迁移。上一轮还在比较模型回答质量，下一轮已经讨论“代理是否可以接管工作流”。这类迁移常被解读为技术进步驱动的自然更新，但现实数据显示：讨论热度与实际生产率并不同步。</p>
+        <p>在社交平台主导的扩散环境中，技术采纳首先是可见性事件，而非能力事件。用户更容易展示“我已接入”，而非“我已稳定产出”；平台更愿意放大成功截图，而非失败复盘。结果是，接入行为被误当作掌握行为，使用身份被误当作使用能力。</p>
+        <p>本文据此提出“表演性采纳”框架：技术扩散、身份竞争与学习摩擦不是三条平行线，而是相互放大的耦合系统。热潮越高，展示压力越大；展示压力越大，复盘动力越弱；复盘越弱，落地越不稳定。</p>
+        <p>在方法上，我们整理了 1,204 条跨平台公开语料，构建“接入展示强度（AS）—摩擦暴露时长（FT）—7日任务留存率（DR7）—身份残留率（IR）”四指标体系。样本显示，多数流失发生在第 2–5 天，且主要节点并非“模型答不出来”，而是权限、环境依赖、上下文管理与流程拆解失败。</p>
+        <p>进一步地，我们批判两种流行解释：其一是工具决定论，认为模型更强就会自然落地；其二是用户素质论，把失败归咎于个体懒惰。前者忽略组织流程成本，后者忽略平台激励结构。二者共同结果是把系统问题私有化。</p>
+        <p>本文结论并不悲观：真正留存者并非技术最强者，而是任务定义最清晰、失败修复意愿最稳定、复用能力最强的人群。也就是说，AI 时代的关键分化不是“谁先用上”，而是“谁先把一次成功变成可重复流程”。</p>
+      </div>
+
+      <div class="banner">本内容纯属整活，不代表任何学术观点或现实指导建议。请保持理智，切勿模仿。</div>
+    </div>
+  </div>
+</body>
+</html>
