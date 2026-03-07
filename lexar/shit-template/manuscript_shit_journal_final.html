@@ -50,7 +50,7 @@
     </div>
 
     <div class="sec">ABSTRACT / 摘要</div>
-    <div class="small">基于东亚五地公开社媒/论坛/群聊语料（清洗后 N=986），本文检验“表演性采纳”与短期留存之间关系。Logit 模型显示，接入展示强度（AS）显著降低 7 日留存（OR=0.662, p&lt;0.001），任务清晰度（TaskClarity）显著提升留存（OR=1.681, p&lt;0.001），学习成本显著提高弃用风险（HR=1.21, p&lt;0.01）。问题关键并非“工具强不强”，而是平台展示激励与真实学习流程错位。</div>
+    <div class="small">基于东亚五地公开社媒/论坛/群聊语料（清洗后 N=986），本文检验“表演性采纳”与短期留存之间的结构性关联。Logit 模型显示，接入展示强度（AS）与 7 日留存显著负相关（OR=0.662, p&lt;0.001），任务清晰度（TaskClarity）与留存显著正相关（OR=1.681, p&lt;0.001），学习成本与弃用风险显著正相关（HR=1.21, p&lt;0.01）。结果提示：关键不只是工具能力，而是平台展示激励与连续学习流程之间存在错配。</div>
 
     <div class="sec">INDEX TERMS / 关键词</div>
     <div class="small">东亚；AI 扩散；表演性采纳；平台激励；学习成本；数字劳动</div>
@@ -63,12 +63,12 @@
       <p>从 DeepSeek 到 OpenClaw，东亚互联网在短期内完成了高强度技术话题迁移。讨论热度飙升，但稳定产出并未同步增长。技术采纳在平台环境里首先是可见性事件，而不只是能力事件。</p>
       <p>用户更容易展示“我已接入”，而非“我已稳定交付”。平台更愿意放大成功截图，而不是失败复盘。由此产生“身份在场、能力缺席”的落差。</p>
       <p>本文提出“表演性采纳”框架：技术扩散、身份竞争、学习摩擦三者形成耦合反馈。热潮越高，展示压力越高；展示越强，复盘越弱；复盘越弱，留存越低。</p>
-      <p>我们构建 AS（接入展示强度）—FT（摩擦暴露时长）—DR7（7日留存）—IR（身份残留率）指标体系，并纳入 TaskClarity 与 LearningCost 进行计量检验。</p>
+      <p>我们构建 AS（接入展示强度：用户在前48小时发布截图、转发“已接入”内容的频次强度）—FT（摩擦暴露时长：从准备上手到首次关键报错的小时数）—DR7（7日留存：第7天是否仍用同一工具完成同一任务）—IR（身份残留率：停用后是否仍持续输出“在用AI”身份信号）指标体系，并纳入 TaskClarity 与 LearningCost 进行计量检验。</p>
     </div>
 
     <div class="sec">2. DATA, MODEL & RESULTS / 数据、模型与结果</div>
     <div class="twocol">
-      <p><b>样本：</b>初始 N=1,204，清洗后 N=986。清洗包含去重、缺失时间戳删除与机器人营销样本剔除。</p>
+      <p><b>样本：</b>初始 N=1,204，清洗后 N=986。清洗包含去重、缺失时间戳删除与机器人营销样本剔除。样本主要来自公开讨论空间，存在平台选择偏差与“高表达用户”过度代表的可能，因此外推至全部用户群体需谨慎。</p>
       <p><b>主模型：</b>Logit 预测 DR7，控制地区、平台与发帖时段固定效应。稳健性使用 DR14 替换、极端 AS trimming、分地区子样本与 Cox 弃用风险模型。</p>
       <p><b>核心结果：</b>AS、FT、IR、LearningCost 均显著负向影响 DR7；TaskClarity 为稳定正向预测因子。模型表现：Pseudo R²=0.216，AUC=0.782。</p>
       <table class="tbl">
@@ -85,12 +85,12 @@
     <div class="sec">3. FIGURES / 图表</div>
     <div class="fig"><img src="figures/fig1_correlation_heatmap.png" alt="Figure 1"><div class="cap">Figure 1. 变量相关热图（AS、FT、IR、TaskClarity、LearningCost 与 DR7）</div></div>
     <div class="fig"><img src="figures/fig2_logit_forest.png" alt="Figure 2"><div class="cap">Figure 2. Logit OR 森林图（Table 2 系数与标准误换算）</div></div>
-    <div class="fig"><img src="figures/fig3_survival_curve.png" alt="Figure 3"><div class="cap">Figure 3. 学习成本分组生存曲线（Illustrative）</div></div>
+    <div class="fig"><img src="figures/fig3_survival_curve.png" alt="Figure 3"><div class="cap">Figure 3. 学习成本分组生存曲线（Illustrative；用于机制直观展示，不替代主回归估计）</div></div>
     <div class="fig"><img src="figures/fig4_robustness_coefficients.png" alt="Figure 4"><div class="cap">Figure 4. 主模型与稳健性场景系数对比</div></div>
 
     <div class="sec">4. CONCLUSION / 结论</div>
     <div class="twocol">
-      <p>AI 热潮中的失配并非单一技术问题，而是激励结构问题。要提升真实生产率，重点不是继续放大“接入叙事”，而是把激励从“展示成功”迁移到“复盘成功”。</p>
+      <p>AI 热潮中的失配不只是技术问题，更与激励结构高度相关。要提升真实生产率，重点不是继续放大“接入叙事”，而是把激励从“展示成功”迁移到“复盘成功”。</p>
       <p>组织层面的直接建议：把 7–14 日复用质量纳入评估；把异常修复与失败复盘纳入 onboarding；用“是否稳定交付”替代“是否已接入”。</p>
     </div>
 
