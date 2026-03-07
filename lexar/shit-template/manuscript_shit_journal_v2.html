@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>S.H.I.T Journal Style v2</title>
+  <style>
+    @page { size: A4; margin: 12mm 11mm 15mm 11mm; }
+    body{font-family:"Times New Roman","Songti SC",serif;font-size:11px;line-height:1.45;color:#222;margin:0}
+    .wm{position:fixed;inset:20mm 0 18mm 0;z-index:0;pointer-events:none;overflow:hidden}
+    .wm span{display:block;transform:rotate(-24deg);text-align:center;margin:44px 0;font-size:34px;font-weight:700;color:rgba(184,31,31,.11)}
+    .main{position:relative;z-index:1;padding:0}
+    .head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333;padding-bottom:5px;margin-bottom:8px}
+    .logo{height:30px}
+    .title{font-size:23px;line-height:1.2;color:#8e2f8e;text-align:center;font-weight:700;margin:6px 0}
+    .meta{text-align:center;font-size:11px;margin-bottom:8px}
+    .sec{font-weight:700;color:#8e2f8e;text-transform:uppercase;font-size:11px;margin:8px 0 4px}
+    .twocol{column-count:2;column-gap:13px;text-align:justify}
+    .twocol p{margin:0 0 7px}
+    .eq,.tbl,.fig{break-inside:avoid}
+    .eq{font-family:"Courier New",monospace;background:#fafafa;border:1px solid #e6e6e6;padding:6px;margin:6px 0;font-size:10px}
+    .tbl{width:100%;border-collapse:collapse;font-size:10.5px;margin:6px 0}
+    .tbl th,.tbl td{border:1px solid #666;padding:3px 4px;text-align:center}
+    .fig img{width:100%;border:1px solid #ddd}
+    .cap{font-size:10px;color:#444;margin:2px 0 8px}
+    .banner{margin-top:10px;background:#d93b3b;color:#fff;text-align:center;font-size:20px;font-weight:700;padding:7px}
+  </style>
+</head>
+<body>
+<div class="wm">
+  <span>S.H.I.T JOURNAL PREPRINT · 本内容纯属整活，不代表任何学术观点</span>
+  <span>请保持理智，切勿模仿 · S.H.I.T JOURNAL PREPRINT</span>
+  <span>S.H.I.T JOURNAL PREPRINT · 本内容纯属整活，不代表任何学术观点</span>
+</div>
+<div class="main">
+  <div class="head"><img src="LOGO2.png" class="logo"/><div>💩</div></div>
+  <div class="title">从“技术狂欢”到“生产力停滞”：<br>东亚 AI 工具热潮中的表演性采纳与结构性失配（2025–2026）</div>
+  <div class="meta">李某某<sup>1,*</sup>；王某某<sup>2</sup><br>1. Department of Meme Economics, University of Excretion Technology<br>2. Institute of Workflow Archaeology, Septic Tank Campus<br>* 通讯作者：goushi@shitjournal.org</div>
+
+  <div class="sec">ABSTRACT / 摘要</div>
+  <div>我们研究一个在东亚平台社会里几乎人人有感却很少被严肃建模的问题：为什么“AI 接入截图”越来越多，而稳定产出并没有同比增长。基于跨平台公开叙事样本（初始 N=1,204；清洗后 N=986），我们构建 AS（接入展示强度）—FT（摩擦暴露时长）—DR7（7日留存）—IR（身份残留率）框架。结果显示：AS 与 DR7 显著负相关（OR=0.662, p&lt;0.001），TaskClarity 显著正相关（OR=1.681, p&lt;0.001），LearningCost 显著提高弃用风险（HR=1.21, p&lt;0.01）。本文主张：该现象更接近“激励结构失配”，而非“个人不努力”。</div>
+
+  <div class="sec">INDEX TERMS / 关键词</div>
+  <div>AI 扩散；表演性采纳；平台激励；学习成本；数字劳动；workflow 落地</div>
+
+  <div class="sec">IMPACT STATEMENT / 影响声明</div>
+  <div>本文把“你只是不会用 AI”的个人道德叙事，转写成可检验的机制问题：当平台奖励可见性而非可复用性时，用户理性选择会偏向“展示成功”，并系统性压缩“复盘投入”。</div>
+
+  <div class="sec">I. INTRODUCTION / 引言</div>
+  <div class="twocol">
+    <p>在许多组织里，AI 工具的 adoption dashboard 一片繁荣：登录数上升、试用量暴涨、群里每天都有“我接上了”的截图。但项目周报里真正能复用的产出并不多，甚至出现“第二周即吃灰”的常态化轨迹。</p>
+    <p>我们将这一悖论称为 <b>High Access, Low Retention, Weak Landing (HALRWL)</b>。它不是个体意志力问题，也不是单纯模型能力问题，而是“展示激励—身份竞争—学习摩擦”耦合下的结构性结果。</p>
+    <p>直白说：当可见收益集中在“看起来会用”，而成本集中在“真的把流程跑通”，多数人会优化前者。</p>
+  </div>
+
+  <div class="sec">II. DATA & METHODS / 数据与方法</div>
+  <div class="twocol">
+    <p><b>样本来源：</b>东亚五地公开社媒/论坛/群聊的 AI 采纳叙事。<b>清洗后 N=986</b>。样本可能存在公开表达者过度代表，因此外推需谨慎。</p>
+    <p><b>变量直译：</b>AS=前48小时“我接上了”式展示频度；FT=从准备上手到首次关键报错的小时数；DR7=第7天是否还在用同一工具做同一任务；IR=停用后是否仍持续维持“AI 在用”身份信号。</p>
+    <div class="eq">Pr(DR7=1)=logit^-1(α+β1AS+β2FT+β3IR+β4TaskClarity+β5LearningCost+γX)</div>
+    <p>稳健性：DR14 替换、极端 AS trimming、分地区子样本、Cox 风险模型。</p>
+  </div>
+
+  <table class="tbl">
+    <tr><th>变量</th><th>Logit系数</th><th>OR</th><th>p值</th></tr>
+    <tr><td>AS</td><td>-0.412</td><td>0.662</td><td>&lt;0.001</td></tr>
+    <tr><td>FT</td><td>-0.028</td><td>0.972</td><td>0.002</td></tr>
+    <tr><td>IR</td><td>-0.365</td><td>0.694</td><td>0.010</td></tr>
+    <tr><td>TaskClarity</td><td>0.519</td><td>1.681</td><td>&lt;0.001</td></tr>
+    <tr><td>LearningCost</td><td>-0.184</td><td>0.832</td><td>&lt;0.001</td></tr>
+  </table>
+
+  <div class="sec">III. FIGURES / 图表</div>
+  <div class="fig"><img src="figures/fig1_correlation_heatmap.png"/><div class="cap">Figure 1. 变量相关热图：TaskClarity 与 DR7 同向，AS/LearningCost 与 DR7 反向。</div></div>
+  <div class="fig"><img src="figures/fig2_logit_forest.png"/><div class="cap">Figure 2. OR 森林图：TaskClarity 为最强稳定正向预测因子。</div></div>
+  <div class="fig"><img src="figures/fig3_survival_curve.png"/><div class="cap">Figure 3. 学习成本分组生存曲线（Illustrative，仅机制示意，不替代主估计）。</div></div>
+  <div class="fig"><img src="figures/fig4_robustness_coefficients.png"/><div class="cap">Figure 4. 主模型与稳健性场景系数方向一致。</div></div>
+
+  <div class="sec">IV. DISCUSSION / 讨论</div>
+  <div class="twocol">
+    <p>该结果不支持“再喊几次 all-in AI 就能提效”的简单叙事。真正决定留存的，不是接入速度，而是任务定义精度与摩擦后的修复意愿。</p>
+    <p>因此，管理建议应从 KPI 端改起：把“接入率”降权，把“7–14 日复用质量”升权；把“截图分享”从核心激励位移到“复盘文档质量”。</p>
+  </div>
+
+  <div class="sec">V. CONCLUSION / 结论</div>
+  <div>AI 时代真正的分化，不是“谁先晒出接入截图”，而是“谁先把一次偶然成功，做成可重复流程”。</div>
+
+  <div class="banner">本内容纯属整活，不代表任何学术观点或现实指导建议。请保持理智，切勿模仿。</div>
+</div>
+</body>
+</html>
