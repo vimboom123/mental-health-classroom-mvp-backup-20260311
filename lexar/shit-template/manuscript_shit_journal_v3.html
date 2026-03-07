@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>S.H.I.T Journal Style v3</title>
+  <style>
+    @page { size: A4; margin: 12mm 11mm 15mm 11mm; }
+    body{font-family:"Times New Roman","Songti SC",serif;font-size:11px;line-height:1.48;color:#222;margin:0}
+    .wm{position:fixed;inset:20mm 0 18mm 0;z-index:0;pointer-events:none;overflow:hidden}
+    .wm span{display:block;transform:rotate(-24deg);text-align:center;margin:44px 0;font-size:34px;font-weight:700;color:rgba(184,31,31,.11)}
+    .main{position:relative;z-index:1}
+    .head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333;padding-bottom:5px;margin-bottom:8px}
+    .logo{height:30px}
+    .title{font-size:23px;line-height:1.2;color:#8e2f8e;text-align:center;font-weight:700;margin:6px 0}
+    .meta{text-align:center;font-size:11px;margin-bottom:8px}
+    .sec{font-weight:700;color:#8e2f8e;text-transform:uppercase;font-size:11px;margin:8px 0 4px}
+    .single p{margin:0 0 7px;text-align:justify}
+    .twocol{column-count:2;column-gap:13px;text-align:justify}
+    .twocol p{margin:0 0 7px}
+    .eq,.tbl,.fig,.quote{break-inside:avoid}
+    .eq{font-family:"Courier New",monospace;background:#fafafa;border:1px solid #e6e6e6;padding:6px;margin:6px 0;font-size:10px}
+    .quote{border-left:3px solid #caa74a;background:#fffaf0;padding:6px 8px;margin:7px 0;font-style:italic}
+    .tbl{width:100%;border-collapse:collapse;font-size:10.5px;margin:6px 0}
+    .tbl th,.tbl td{border:1px solid #666;padding:3px 4px;text-align:center}
+    .fig img{width:100%;border:1px solid #ddd}
+    .cap{font-size:10px;color:#444;margin:2px 0 8px}
+    .banner{margin-top:10px;background:#d93b3b;color:#fff;text-align:center;font-size:20px;font-weight:700;padding:7px}
+  </style>
+</head>
+<body>
+<div class="wm">
+  <span>S.H.I.T JOURNAL PREPRINT · 本内容纯属整活，不代表任何学术观点</span>
+  <span>请保持理智，切勿模仿 · S.H.I.T JOURNAL PREPRINT</span>
+  <span>S.H.I.T JOURNAL PREPRINT · 本内容纯属整活，不代表任何学术观点</span>
+</div>
+<div class="main">
+  <div class="head"><img src="LOGO2.png" class="logo"/><div>💩</div></div>
+  <div class="title">从“技术狂欢”到“生产力停滞”：<br>东亚 AI 工具热潮中的表演性采纳与结构性失配（2025–2026）</div>
+  <div class="meta">李某某<sup>1,*</sup>；王某某<sup>2</sup><br>1. Department of Meme Economics, University of Excretion Technology<br>2. Institute of Workflow Archaeology, Septic Tank Campus<br>* 通讯作者：goushi@shitjournal.org</div>
+
+  <div class="sec">ABSTRACT / 摘要</div>
+  <div class="single">
+    <p>本文讨论一个看似热闹、实则虚空的现实：越来越多人在社交平台宣布“我接上 AI 了”，但真正可重复、可交付、可复盘的工作流并没有同步增长。基于东亚五地公开叙事样本（初始 N=1,204；清洗后 N=986），我们构建 AS（接入展示强度）—FT（摩擦暴露时长）—DR7（7日留存）—IR（身份残留率）框架。结果显示：AS 与 DR7 显著负相关（OR=0.662, p&lt;0.001），TaskClarity 显著正相关（OR=1.681, p&lt;0.001），LearningCost 显著提高弃用风险（HR=1.21, p&lt;0.01）。我们主张：AI 不是宗教，也不是考试。适配任务、适配人格、适配场景，才是长期有效的采纳策略。</p>
+  </div>
+
+  <div class="sec">INDEX TERMS / 关键词</div>
+  <div>AI 扩散；表演性采纳；平台激励；学习成本；数字劳动；反技术狂热</div>
+
+  <div class="sec">IMPACT STATEMENT / 影响声明</div>
+  <div class="single">
+    <p>我们反对两种极端：一种是“AI 无所不能”的新技术福音论，另一种是“不会用 AI 就要被淘汰”的焦虑营销。真正值得讨论的，不是追风速度，而是个体如何在有限认知资源里做清醒选择。</p>
+  </div>
+
+  <div class="sec">I. INTRODUCTION / 引言</div>
+  <div class="single">
+    <p>2025–2026 的东亚互联网像一个持续增压的蒸汽锅：每一周都有新模型、新 Agent、新教程、新截图。有人晒效率翻倍，有人晒自动化接管人生，也有人在凌晨两点一边报错一边转发“明天一定 all-in AI”。</p>
+    <p>问题是：我们究竟在追赶什么？是生产率，还是一种“我没有掉队”的心理安全感？</p>
+    <p>在平台化传播里，技术很容易被包装成身份。你不必真的理解它，只需表现出你正在使用它。于是，“接入”被误当成“掌握”，“展示”被误当成“产出”，“热情”被误当成“能力”。这就是本文要讨论的核心：<b>表演性采纳（performative adoption）</b>。</p>
+    <div class="quote">如果一项技术首先让你更会发截图，而不是更会完成任务，那它此刻对你来说，可能更像社交货币，不像生产工具。</div>
+    <p>我们不反对 AI。相反，我们认为 AI 应当被认真使用。但“认真使用”意味着你有权慢下来、有权局部采用、有权拒绝不适配的工作流，而不是被群体节奏推着狂奔。</p>
+  </div>
+
+  <div class="sec">II. DATA & METHODS / 数据与方法</div>
+  <div class="twocol">
+    <p><b>样本来源：</b>东亚五地公开社媒/论坛/群聊 AI 采纳叙事。清洗后 N=986。由于公开表达样本天然偏向“高活跃用户”，本文结论更接近机制解释，不宜机械外推至总体人口。</p>
+    <p><b>变量定义（通俗版）：</b>AS=前48小时“我接上了”式展示频率；FT=从准备上手到首个关键报错的小时数；DR7=第7天是否仍用同一工具完成同一任务；IR=停用后是否继续维持“在用 AI”身份信号。</p>
+    <p><b>核心模型：</b></p>
+    <div class="eq">Pr(DR7=1)=logit^-1(α+β1AS+β2FT+β3IR+β4TaskClarity+β5LearningCost+γX)</div>
+    <p>稳健性检验包含 DR14 替换、极端值 trimming、分地区子样本与 Cox 风险模型。本文只主张“相关与结构性关联”，不夸大为单向因果裁决。</p>
+  </div>
+
+  <table class="tbl">
+    <tr><th>变量</th><th>Logit系数</th><th>OR</th><th>p值</th></tr>
+    <tr><td>AS</td><td>-0.412</td><td>0.662</td><td>&lt;0.001</td></tr>
+    <tr><td>FT</td><td>-0.028</td><td>0.972</td><td>0.002</td></tr>
+    <tr><td>IR</td><td>-0.365</td><td>0.694</td><td>0.010</td></tr>
+    <tr><td>TaskClarity</td><td>0.519</td><td>1.681</td><td>&lt;0.001</td></tr>
+    <tr><td>LearningCost</td><td>-0.184</td><td>0.832</td><td>&lt;0.001</td></tr>
+  </table>
+
+  <div class="sec">III. RESULTS / 结果</div>
+  <div class="twocol">
+    <p>结果高度一致地指向一个朴素事实：任务定义越清晰，留存越高；展示冲动越强，留存越差。换句话说，真正起作用的不是“有没有用过 AI”，而是“是否把 AI 嵌进可重复流程”。</p>
+    <p>Figure 1–4 与表格口径一致：TaskClarity 是最稳定的正向项；AS 与 LearningCost 是稳定负向项。Figure 3 为机制示意，不替代主估计。</p>
+  </div>
+
+  <div class="fig"><img src="figures/fig1_correlation_heatmap.png"/><div class="cap">Figure 1. 变量相关热图：TaskClarity 与 DR7 同向，AS/LearningCost 与 DR7 反向。</div></div>
+  <div class="fig"><img src="figures/fig2_logit_forest.png"/><div class="cap">Figure 2. OR 森林图：任务清晰度是最稳的正向预测因子。</div></div>
+  <div class="fig"><img src="figures/fig3_survival_curve.png"/><div class="cap">Figure 3. 学习成本分组生存曲线（Illustrative，仅机制示意，不替代主估计）。</div></div>
+  <div class="fig"><img src="figures/fig4_robustness_coefficients.png"/><div class="cap">Figure 4. 主模型与稳健性场景系数方向一致。</div></div>
+
+  <div class="sec">IV. CRITICAL DISCUSSION / 批判性讨论</div>
+  <div class="twocol">
+    <p>首先，AI 跟风热潮并不完全是“用户不理性”。它是平台机制、组织 KPI 与身份焦虑共同制造的结果。平台奖励可见性，组织奖励“已部署”叙事，个体自然会把精力投向更容易被看见的行为。</p>
+    <p>其次，“全民 all-in”常常掩盖劳动分工的现实。并不是每个人都需要成为 prompt engineer。有人需要稳定执行，有人需要复杂判断，有人需要深度协作。把同一套 AI 采用节奏强加给所有岗位，本身就是低效。</p>
+    <p>第三，技术狂热常把“不用 AI”污名化为落后。但在许多任务中，低技术方案更稳、更可审计、更少错误链。真正成熟的组织不是“全员同速”，而是允许多种技术路径并存。</p>
+    <div class="quote">适合自己的，才是高效的。不是你服务技术潮流，而是技术服务你的任务边界。</div>
+    <p>因此，我们建议把叙事从“你接了没有”改为“你复用了没有”；从“演示成功”改为“失败后能否修复”；从“热度”改为“交付”。这不是反技术，而是把技术还给现实。</p>
+  </div>
+
+  <div class="sec">V. CONCLUSION / 结论</div>
+  <div class="twocol">
+    <p>AI 可以接触，但没必要狂信。工具应当进入你的工作，不必接管你的价值判断。真正的分化，不在于谁先晒截图，而在于谁能把一次成功变成可重复流程。</p>
+    <p>如果你能清楚回答这三个问题——“我在解决什么任务？”“我愿意承担什么学习成本？”“我是否得到了稳定收益？”——你就已经比热潮更清醒。</p>
+  </div>
+
+  <div class="banner">本内容纯属整活，不代表任何学术观点或现实指导建议。请保持理智，切勿模仿。</div>
+</div>
+</body>
+</html>
