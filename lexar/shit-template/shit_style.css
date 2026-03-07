@@ -1,0 +1,14 @@
+body {
+  font-family: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", serif;
+  max-width: 900px;
+  margin: 36px auto;
+  line-height: 1.75;
+  color: #1f2937;
+  padding: 0 20px;
+}
+
+h1 { font-size: 32px; margin-bottom: 8px; }
+h2 { font-size: 24px; margin-top: 30px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+h3 { font-size: 18px; margin-top: 20px; }
+strong { color: #111827; }
+hr { border: none; border-top: 1px dashed #c7c7c7; margin: 24px 0; }
