@@ -9,6 +9,7 @@ _Learn about the person you're helping. Update this as you go._
 - **Notes:**
   - 用户偏好：当他询问“我的手机地址/位置”时，默认返回尽量具体的位置描述（优先到街道/小区/地标），并附坐标。
   - 门店/附近推荐默认主数据源使用高德（AMAP）；不再使用大众点评抓取链路。
+  - 当能力缺少时，先主动提议可用 skill；仅在用户明确同意后再安装（不自动安装）。
 
 ## Context
 
