@@ -62,6 +62,13 @@ scripts/reviewer_dispatch.sh oracle ...
 scripts/reviewer_dispatch.sh oracle-browser ...
 ```
 
+- Oracle browser reviewer policy:
+  - default Oracle reviewer path = `scripts/oracle-browser-auto.sh`
+  - wait up to 2 minutes for a first result when useful
+  - if still running after 2 minutes, continue main work without blocking
+  - if Oracle returns later, still ingest its review and apply relevant fixes
+  - when rerunning a similar prompt, use `--force` plus a unique `--slug` to avoid duplicate-prompt blocking
+
 Why:
 - bare CLI runs may inherit a PATH without `/usr/sbin`
 - then both Gemini and Oracle can fail at startup with `spawnSync sysctl ENOENT`

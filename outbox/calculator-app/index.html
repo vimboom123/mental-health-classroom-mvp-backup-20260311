@@ -1,42 +1,42 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Calculator</title>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #020617;
-      --panel: rgba(15, 23, 42, 0.92);
-      --panel-border: rgba(148, 163, 184, 0.18);
-      --screen: rgba(15, 23, 42, 0.78);
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --num: #1e293b;
-      --fn: #334155;
-      --op: #f59e0b;
-      --eq: #10b981;
-      --shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+      --bg: #0b1020;
+      --panel: rgba(18, 24, 45, 0.88);
+      --panel-border: rgba(255,255,255,0.08);
+      --display: #f8fbff;
+      --muted: #91a0c7;
+      --key: #1b2544;
+      --key-2: #24315a;
+      --accent: #6ea8fe;
+      --accent-2: #8b5cf6;
+      --danger: #ef4444;
+      --shadow: 0 24px 70px rgba(0,0,0,0.45);
     }
 
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       min-height: 100vh;
       display: grid;
       place-items: center;
       padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top, rgba(59, 130, 246, 0.18), transparent 30%),
-        linear-gradient(135deg, #020617, #0f172a 45%, #111827);
-      color: var(--text);
+        radial-gradient(circle at top, rgba(110, 168, 254, 0.2), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.18), transparent 28%),
+        linear-gradient(180deg, #09101d 0%, #0f172a 100%);
+      color: var(--display);
     }
 
-    .calc {
-      width: min(100%, 360px);
+    .calculator {
+      width: min(100%, 380px);
       padding: 18px;
       border-radius: 28px;
       background: var(--panel);
@@ -45,412 +45,409 @@
       backdrop-filter: blur(18px);
     }
 
-    .screen {
-      background: var(--screen);
-      border: 1px solid rgba(148, 163, 184, 0.14);
-      border-radius: 20px;
-      padding: 16px 18px 14px;
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .screen {
       min-height: 108px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-      gap: 10px;
+      justify-content: end;
+      gap: 8px;
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 16px;
       overflow: hidden;
     }
 
-    .expr,
-    .result {
-      width: 100%;
+    .expression {
+      min-height: 20px;
       text-align: right;
+      color: var(--muted);
+      font-size: 14px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      user-select: none;
     }
 
-    .expr {
-      min-height: 24px;
-      font-size: 16px;
-      color: var(--muted);
-    }
-
-    .result {
-      min-height: 46px;
-      font-size: 40px;
+    .display {
+      text-align: right;
+      font-size: clamp(2.25rem, 6vw, 3.2rem);
       line-height: 1.1;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: -0.03em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .keys {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
     }
 
     button {
       appearance: none;
       border: 0;
+      min-height: 62px;
       border-radius: 18px;
-      height: 62px;
-      font-size: 24px;
+      color: var(--display);
+      background: var(--key);
+      font-size: 1.1rem;
       font-weight: 600;
-      color: #fff;
       cursor: pointer;
-      transition: transform 0.04s ease, filter 0.15s ease, opacity 0.15s ease;
-      background: var(--num);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: transform 0.08s ease, filter 0.15s ease, background 0.15s ease;
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,0.06);
     }
 
     button:hover { filter: brightness(1.08); }
     button:active { transform: scale(0.98); }
     button:focus-visible {
-      outline: 2px solid rgba(96, 165, 250, 0.9);
+      outline: 2px solid rgba(110,168,254,0.95);
       outline-offset: 2px;
     }
 
-    .fn { background: var(--fn); }
-    .op { background: var(--op); }
-    .eq { background: var(--eq); }
-    .zero { grid-column: span 2; }
+    .op { background: linear-gradient(180deg, var(--key-2), #263b73); }
+    .accent { background: linear-gradient(180deg, var(--accent), #4f7fff); }
+    .danger { background: linear-gradient(180deg, #f97373, var(--danger)); }
+    .span-2 { grid-column: span 2; }
 
     .hint {
       margin-top: 12px;
       text-align: center;
-      font-size: 12px;
       color: var(--muted);
-      user-select: none;
+      font-size: 12px;
+    }
+
+    @media (max-width: 420px) {
+      body { padding: 12px; }
+      .calculator { padding: 14px; border-radius: 24px; }
+      button { min-height: 58px; border-radius: 16px; }
+      .screen { min-height: 98px; padding: 16px; }
     }
   </style>
 </head>
 <body>
-  <main class="calc" aria-label="计算器">
+  <main class="calculator" aria-label="Calculator app" tabindex="0">
+    <div class="topline">
+      <span>Calculator</span>
+      <span class="badge" id="status">Ready</span>
+    </div>
+
     <section class="screen" aria-live="polite">
-      <div id="expr" class="expr">&nbsp;</div>
-      <div id="result" class="result">0</div>
+      <div class="expression" id="expression"></div>
+      <div class="display" id="display">0</div>
     </section>
 
-    <section class="keys">
-      <button class="fn" data-action="clear">AC</button>
-      <button class="fn" data-action="delete">⌫</button>
-      <button class="fn" data-action="sign">±</button>
-      <button class="op" data-value="/">÷</button>
+    <section class="keys" aria-label="Calculator keys">
+      <button class="danger" data-action="clear">AC</button>
+      <button data-action="sign" aria-label="Toggle sign">±</button>
+      <button data-action="percent" aria-label="Percent">%</button>
+      <button class="op" data-operator="/" aria-label="Divide">÷</button>
 
-      <button data-value="7">7</button>
-      <button data-value="8">8</button>
-      <button data-value="9">9</button>
-      <button class="op" data-value="*">×</button>
+      <button data-digit="7">7</button>
+      <button data-digit="8">8</button>
+      <button data-digit="9">9</button>
+      <button class="op" data-operator="*" aria-label="Multiply">×</button>
 
-      <button data-value="4">4</button>
-      <button data-value="5">5</button>
-      <button data-value="6">6</button>
-      <button class="op" data-value="-">−</button>
+      <button data-digit="4">4</button>
+      <button data-digit="5">5</button>
+      <button data-digit="6">6</button>
+      <button class="op" data-operator="-" aria-label="Subtract">−</button>
 
-      <button data-value="1">1</button>
-      <button data-value="2">2</button>
-      <button data-value="3">3</button>
-      <button class="op" data-value="+">＋</button>
+      <button data-digit="1">1</button>
+      <button data-digit="2">2</button>
+      <button data-digit="3">3</button>
+      <button class="op" data-operator="+" aria-label="Add">+</button>
 
-      <button class="zero" data-value="0">0</button>
-      <button data-value=".">.</button>
-      <button class="fn" data-action="percent">%</button>
-      <button class="eq" data-action="equal">＝</button>
+      <button class="span-2" data-digit="0">0</button>
+      <button data-action="decimal">.</button>
+      <button class="accent" data-action="equals">=</button>
     </section>
 
-    <div class="hint">支持键盘输入 · C / Esc / Delete 清空 · Backspace 删除</div>
+    <div class="hint">Keyboard: 0–9, +, -, *, /, Enter, Backspace, Esc, %</div>
   </main>
 
   <script>
-    const exprEl = document.getElementById('expr');
-    const resultEl = document.getElementById('result');
-    const operators = new Set(['+', '-', '*', '/']);
-    const DISPLAY_MAP = { '*': '×', '/': '÷', '-': '−', '+': '+' };
-    const MAX_DIGITS = 15;
+    const display = document.getElementById('display');
+    const expression = document.getElementById('expression');
+    const statusEl = document.getElementById('status');
 
-    let tokens = ['0'];
-    let overwriteNumber = false;
-    let justEvaluated = false;
-    let errorState = false;
+    const clearButton = document.querySelector('[data-action="clear"]');
 
-    function current() {
-      return tokens[tokens.length - 1];
+    const state = {
+      current: '0',
+      stored: null,
+      operator: null,
+      overwrite: false,
+      justEvaluated: false,
+      error: false,
+      lastOperation: { operator: null, value: null },
+    };
+
+    const MAX_LEN = 14;
+    const symbols = { '/': '÷', '*': '×', '-': '−', '+': '+' };
+
+    function updateStatus(text = '') {
+      statusEl.textContent = text || 'Calculator';
     }
 
-    function setCurrent(value) {
-      tokens[tokens.length - 1] = value;
+    function formatNumber(value) {
+      if (!Number.isFinite(value)) return 'Error';
+      const normalized = Number(value.toPrecision(12));
+      const text = String(normalized);
+      if (text.length <= MAX_LEN) return text;
+      return normalized.toExponential(8).replace(/\.?0+e/, 'e');
     }
 
-    function isOperator(token) {
-      return operators.has(token);
+    function renderExpression() {
+      expression.textContent = state.operator && state.stored !== null
+        ? `${state.stored} ${symbols[state.operator] ?? state.operator}`
+        : '';
     }
 
-    function formatExpr(list = tokens) {
-      if (errorState) return '表达式错误';
-      return list.map(token => DISPLAY_MAP[token] || token).join(' ');
+    function render() {
+      display.textContent = state.current;
+      renderExpression();
+      clearButton.textContent = (state.current !== '0' && !state.error && !state.justEvaluated) ? 'CE' : 'AC';
     }
 
-    function normalizeNumber(str) {
-      if (str === '-0' || str === '') return '0';
-      if (!str.includes('.')) return str;
-      const trimmed = str.replace(/(\.\d*?[1-9])0+$/u, '$1').replace(/\.0+$/u, '');
-      return trimmed === '-0' ? '0' : trimmed;
+    function normalizeCurrent() {
+      if (state.current === '-0' || state.current === '-0.') state.current = '0';
     }
 
-    function toDisplayNumber(num) {
-      if (!Number.isFinite(num)) return 'Error';
-      const abs = Math.abs(num);
-      if ((abs >= 1e12 || (abs > 0 && abs < 1e-9))) return num.toExponential(6).replace(/\.0+e/u, 'e');
-      return normalizeNumber(String(Number(num.toFixed(12))));
+    function resetAll() {
+      state.current = '0';
+      state.stored = null;
+      state.operator = null;
+      state.overwrite = false;
+      state.justEvaluated = false;
+      state.error = false;
+      state.lastOperation = { operator: null, value: null };
+      updateStatus();
+      render();
     }
 
-    function update() {
-      exprEl.textContent = formatExpr() || '\u00A0';
-      resultEl.textContent = errorState ? 'Error' : current();
-    }
-
-    function resetIfError() {
-      if (!errorState) return;
-      tokens = ['0'];
-      overwriteNumber = false;
-      justEvaluated = false;
-      errorState = false;
+    function setError() {
+      state.current = 'Error';
+      state.stored = null;
+      state.operator = null;
+      state.overwrite = true;
+      state.justEvaluated = false;
+      state.error = true;
+      updateStatus('Error');
+      render();
     }
 
     function inputDigit(digit) {
-      resetIfError();
-      if (justEvaluated) {
-        tokens = ['0'];
-        justEvaluated = false;
+      if (state.error) resetAll();
+      if (state.overwrite || state.current === '0') {
+        state.current = digit;
+      } else if (state.current === '-0') {
+        state.current = `-${digit}`;
+      } else if (state.current.replace('-', '').length < MAX_LEN) {
+        state.current += digit;
       }
-
-      const value = current();
-      const digitCount = value.replace(/[^0-9]/g, '').length;
-      if (!overwriteNumber && digitCount >= MAX_DIGITS) return;
-      if (overwriteNumber) {
-        setCurrent(digit);
-        overwriteNumber = false;
-      } else if (value === '0') {
-        setCurrent(digit);
-      } else if (value === '-0') {
-        setCurrent('-' + digit);
-      } else {
-        setCurrent(value + digit);
-      }
-      update();
+      state.overwrite = false;
+      state.justEvaluated = false;
+      updateStatus();
+      render();
     }
 
     function inputDecimal() {
-      resetIfError();
-      if (justEvaluated) {
-        tokens = ['0'];
-        justEvaluated = false;
+      if (state.error) resetAll();
+      if (state.overwrite) {
+        state.current = '0.';
+        state.overwrite = false;
+      } else if (!state.current.includes('.')) {
+        state.current += '.';
       }
-
-      if (overwriteNumber) {
-        setCurrent('0.');
-        overwriteNumber = false;
-        update();
-        return;
-      }
-
-      const value = current();
-      if (!value.includes('.')) setCurrent(value + '.');
-      update();
-    }
-
-    function inputOperator(op) {
-      resetIfError();
-      if (overwriteNumber && tokens.length > 1) {
-        tokens[tokens.length - 2] = op;
-      } else {
-        if (justEvaluated) justEvaluated = false;
-        tokens.push(op, '0');
-        overwriteNumber = true;
-      }
-      update();
-    }
-
-    function clearAll() {
-      tokens = ['0'];
-      overwriteNumber = false;
-      justEvaluated = false;
-      errorState = false;
-      update();
-    }
-
-    function backspace() {
-      if (errorState || justEvaluated) return clearAll();
-      if (overwriteNumber) {
-        if (tokens.length > 1) {
-          tokens.splice(-2, 2);
-          overwriteNumber = false;
-          update();
-          return;
-        }
-        overwriteNumber = false;
-      }
-      const value = current();
-      if (value.length <= 1 || (value.length === 2 && value.startsWith('-'))) {
-        setCurrent('0');
-      } else {
-        setCurrent(value.slice(0, -1));
-      }
-      update();
+      updateStatus();
+      render();
     }
 
     function toggleSign() {
-      resetIfError();
-      justEvaluated = false;
-      const value = current();
-      setCurrent(value.startsWith('-') ? value.slice(1) : '-' + value);
-      overwriteNumber = false;
-      update();
+      if (state.error) return resetAll();
+      if (state.current === '0') return;
+      state.current = state.current.startsWith('-') ? state.current.slice(1) : `-${state.current}`;
+      updateStatus();
+      render();
     }
 
-    function percent() {
-      resetIfError();
-      justEvaluated = false;
-      const value = Number(current());
-      if (!Number.isFinite(value)) {
-        errorState = true;
+    function toPercent() {
+      if (state.error) return resetAll();
+      const value = Number(state.current) / 100;
+      state.current = formatNumber(value);
+      if (state.current === 'Error') return setError();
+      state.overwrite = true;
+      updateStatus();
+      render();
+    }
+
+    function clearEntryOrAll() {
+      if (state.error) return resetAll();
+      if (state.current !== '0' && !state.justEvaluated) {
+        state.current = '0';
+        state.overwrite = true;
+        updateStatus();
+        render();
+        return;
+      }
+      calculator.addEventListener('pointerdown', () => calculator.focus());
+    resetAll();
+    }
+
+    function backspace() {
+      if (state.error) return resetAll();
+      if (state.overwrite && !state.justEvaluated) return;
+      if (state.current.length <= 1 || (state.current.length === 2 && state.current.startsWith('-'))) {
+        state.current = '0';
       } else {
-        let nextValue = value / 100;
-        if (tokens.length >= 3 && isOperator(tokens[tokens.length - 2])) {
-          const baseValue = Number(tokens[tokens.length - 3]);
-          const operator = tokens[tokens.length - 2];
-          if (Number.isFinite(baseValue) && (operator === '+' || operator === '-')) {
-            nextValue = (baseValue * value) / 100;
-          }
-        }
-        setCurrent(toDisplayNumber(nextValue));
-        overwriteNumber = false;
+        state.current = state.current.slice(0, -1);
       }
-      update();
+      state.justEvaluated = false;
+      normalizeCurrent();
+      updateStatus();
+      render();
     }
 
-    function precedence(op) {
-      return op === '+' || op === '-' ? 1 : 2;
-    }
-
-    function applyOp(a, b, op) {
-      if (op === '+') return a + b;
-      if (op === '-') return a - b;
-      if (op === '*') return a * b;
-      if (op === '/') {
-        if (b === 0) return NaN;
-        return a / b;
-      }
-      return NaN;
-    }
-
-    function evaluateTokens(list) {
-      const values = [];
-      const ops = [];
-
-      function reduce() {
-        const op = ops.pop();
-        const b = values.pop();
-        const a = values.pop();
-        const result = applyOp(a, b, op);
-        if (!Number.isFinite(result)) throw new Error('bad math');
-        values.push(result);
-      }
-
-      for (const token of list) {
-        if (isOperator(token)) {
-          while (ops.length && precedence(ops[ops.length - 1]) >= precedence(token)) reduce();
-          ops.push(token);
-        } else {
-          const value = Number(token);
-          if (!Number.isFinite(value)) throw new Error('bad number');
-          values.push(value);
-        }
-      }
-
-      while (ops.length) reduce();
-      if (values.length !== 1) throw new Error('bad expression');
-      return values[0];
-    }
-
-    function calculate() {
-      resetIfError();
-      const expr = overwriteNumber && tokens.length > 1 ? tokens.slice(0, -2) : tokens.slice();
-      if (!expr.length) return clearAll();
-
-      try {
-        const result = evaluateTokens(expr);
-        const displayResult = toDisplayNumber(result);
-        exprEl.textContent = formatExpr(expr) + ' =';
-        resultEl.textContent = displayResult;
-        tokens = [displayResult];
-        overwriteNumber = false;
-        justEvaluated = true;
-        errorState = false;
-      } catch {
-        errorState = true;
-        overwriteNumber = false;
-        justEvaluated = false;
-        update();
+    function calculate(a, b, operator) {
+      switch (operator) {
+        case '+': return a + b;
+        case '-': return a - b;
+        case '*': return a * b;
+        case '/': return b === 0 ? NaN : a / b;
+        default: return b;
       }
     }
 
-    document.querySelector('.keys').addEventListener('click', event => {
-      const button = event.target.closest('button');
-      if (!button) return;
-      const { value, action } = button.dataset;
+    function commit(operator) {
+      if (state.error) return resetAll();
+      const currentValue = Number(state.current);
+      if (Number.isNaN(currentValue)) return setError();
 
-      if (value && /^\d$/u.test(value)) return inputDigit(value);
-      if (value === '.') return inputDecimal();
-      if (value && operators.has(value)) return inputOperator(value);
-      if (action === 'clear') return clearAll();
-      if (action === 'delete') return backspace();
-      if (action === 'sign') return toggleSign();
-      if (action === 'percent') return percent();
-      if (action === 'equal') return calculate();
-    });
-
-    function isEditableTarget(target) {
-      return Boolean(
-        target &&
-        (
-          target.isContentEditable ||
-          (typeof target.closest === 'function' && target.closest('input, textarea, select, [contenteditable="true"]'))
-        )
-      );
-    }
-
-    function keyboardAction(key) {
-      if (/^\d$/u.test(key)) return () => inputDigit(key);
-      if (key === '.') return () => inputDecimal();
-      if (operators.has(key)) return () => inputOperator(key);
-      if (key === 'x' || key === 'X') return () => inputOperator('*');
-      if (key === 'Enter' || key === '=') return () => calculate();
-      if (key === 'Backspace') return () => backspace();
-      if (key === 'Delete' || key === 'Escape' || key.toLowerCase() === 'c') return () => clearAll();
-      if (key === '%' || key.toLowerCase() === 'p') return () => percent();
-      if (key.toLowerCase() === 's') return () => toggleSign();
-      return null;
-    }
-
-    window.addEventListener('keydown', event => {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
-      if (isEditableTarget(event.target)) return;
-      if (
-        typeof event.target?.closest === 'function' &&
-        event.target.closest('button') &&
-        (event.key === 'Enter' || event.key === ' ')
-      ) {
+      if (state.overwrite && state.stored !== null && state.operator) {
+        state.operator = operator;
+        updateStatus();
+        render();
         return;
       }
 
-      const action = keyboardAction(event.key);
-      if (!action) return;
-      event.preventDefault();
-      action();
+      if (state.operator && state.stored !== null && !state.overwrite) {
+        const result = calculate(state.stored, currentValue, state.operator);
+        const formatted = formatNumber(result);
+        if (formatted === 'Error') return setError();
+        state.current = formatted;
+        state.stored = Number(formatted);
+      } else if (state.stored === null || state.justEvaluated) {
+        state.stored = currentValue;
+      }
+
+      state.operator = operator;
+      state.overwrite = true;
+      state.justEvaluated = false;
+      updateStatus();
+      render();
+    }
+
+    function evaluate() {
+      if (state.error) return resetAll();
+
+      let result;
+      if (state.justEvaluated && state.lastOperation.operator) {
+        const { operator, value } = state.lastOperation;
+        result = calculate(Number(state.current), value, operator);
+        const formatted = formatNumber(result);
+        if (formatted === 'Error') return setError();
+        expression.textContent = `${state.current} ${symbols[operator] ?? operator} ${value} =`;
+        state.current = formatted;
+      } else {
+        if (!state.operator || state.stored === null) return;
+        const operand = Number(state.current);
+        result = calculate(state.stored, operand, state.operator);
+        const formatted = formatNumber(result);
+        if (formatted === 'Error') return setError();
+        expression.textContent = `${state.stored} ${symbols[state.operator] ?? state.operator} ${state.current} =`;
+        state.current = formatted;
+        state.lastOperation = { operator: state.operator, value: operand };
+        state.stored = null;
+        state.operator = null;
+      }
+
+      state.overwrite = true;
+      state.justEvaluated = true;
+      updateStatus();
+      render();
+    }
+
+    document.querySelector('.keys').addEventListener('click', (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+
+      if (button.dataset.digit) return inputDigit(button.dataset.digit);
+      if (button.dataset.operator) return commit(button.dataset.operator);
+
+      switch (button.dataset.action) {
+        case 'clear': return clearEntryOrAll();
+        case 'sign': return toggleSign();
+        case 'percent': return toPercent();
+        case 'decimal': return inputDecimal();
+        case 'equals': return evaluate();
+        default: return;
+      }
     });
 
-    update();
+    const calculator = document.querySelector('.calculator');
+
+    calculator.addEventListener('keydown', (event) => {
+      const { key } = event;
+      if (/^[0-9]$/.test(key)) {
+        event.preventDefault();
+        return inputDigit(key);
+      }
+      if (['+', '-', '*', '/'].includes(key)) {
+        event.preventDefault();
+        return commit(key);
+      }
+      if (key === '.' || key === ',') {
+        event.preventDefault();
+        return inputDecimal();
+      }
+      if (key === '%') {
+        event.preventDefault();
+        return toPercent();
+      }
+      if (key === 'Enter' || key === '=') {
+        event.preventDefault();
+        return evaluate();
+      }
+      if (key === 'Backspace') {
+        event.preventDefault();
+        return backspace();
+      }
+      if (key === 'Escape' || key.toLowerCase() === 'c') {
+        event.preventDefault();
+        return resetAll();
+      }
+    });
+
+    calculator.addEventListener('pointerdown', () => calculator.focus());
+    resetAll();
   </script>
 </body>
 </html>
