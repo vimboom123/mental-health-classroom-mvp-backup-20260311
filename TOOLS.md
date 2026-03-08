@@ -40,6 +40,33 @@ curl -s "https://geocoding-api.open-meteo.com/v1/search?name=Hangzhou&count=1&la
 curl -s "https://api.open-meteo.com/v1/forecast?latitude=30.29365&longitude=120.16142&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FShanghai&forecast_days=3"
 ```
 
+## Media Delivery Rules (critical)
+
+- For chat delivery of local images/files, always use the exact workspace path returned by tools.
+- Do not rewrite a tool-returned absolute path to `./outbox/...`.
+- Preferred inline form: `MEDIA:~/.openclaw/workspace/outbox/file.png` or the exact absolute `/Users/.../.openclaw/workspace/...` path.
+- If a tool already printed a valid `MEDIA:` line or absolute file path, reuse it verbatim.
+
+## Reviewer CLI Runtime Rules (critical)
+
+- On this machine, do **not** call bare `gemini` or bare `oracle` for reviewer/background multi-agent runs.
+- Always use wrappers:
+  - `scripts/gemini22.sh`
+  - `scripts/oracle22.sh`
+  - `scripts/oracle-browser-auto.sh`
+- Preferred unified entrypoint:
+
+```bash
+scripts/reviewer_dispatch.sh gemini ...
+scripts/reviewer_dispatch.sh oracle ...
+scripts/reviewer_dispatch.sh oracle-browser ...
+```
+
+Why:
+- bare CLI runs may inherit a PATH without `/usr/sbin`
+- then both Gemini and Oracle can fail at startup with `spawnSync sysctl ENOENT`
+- Gemini also requires a compatible `~/.gemini/settings.json`
+
 ## wttr Fallback
 
 ```bash
