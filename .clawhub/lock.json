@@ -32,6 +32,34 @@
     "docx-cn": {
       "version": "1.0.1",
       "installedAt": 1772940042607
+    },
+    "github": {
+      "version": "1.0.0",
+      "installedAt": 1772948561543
+    },
+    "mcporter": {
+      "version": "1.0.0",
+      "installedAt": 1772948564551
+    },
+    "oracle": {
+      "version": "1.0.1",
+      "installedAt": 1772948571879
+    },
+    "notion": {
+      "version": "1.0.0",
+      "installedAt": 1772948574843
+    },
+    "obsidian": {
+      "version": "1.0.0",
+      "installedAt": 1772948577609
+    },
+    "gemini": {
+      "version": "1.0.0",
+      "installedAt": 1772948582787
+    },
+    "agent-browser": {
+      "version": "0.2.0",
+      "installedAt": 1772948612050
     }
   }
 }
