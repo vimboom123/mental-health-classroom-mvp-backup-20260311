@@ -125,7 +125,7 @@
   </style>
 </head>
 <body>
-  <main class="calc" aria-label="Calculator">
+  <main class="calc" aria-label="计算器">
     <section class="screen" aria-live="polite">
       <div id="expr" class="expr">&nbsp;</div>
       <div id="result" class="result">0</div>
@@ -165,6 +165,8 @@
     const exprEl = document.getElementById('expr');
     const resultEl = document.getElementById('result');
     const operators = new Set(['+', '-', '*', '/']);
+    const DISPLAY_MAP = { '*': '×', '/': '÷', '-': '−', '+': '+' };
+    const MAX_DIGITS = 15;
 
     let tokens = ['0'];
     let overwriteNumber = false;
@@ -183,10 +185,9 @@
       return operators.has(token);
     }
 
-    function formatExpr() {
+    function formatExpr(list = tokens) {
       if (errorState) return '表达式错误';
-      const map = { '*': '×', '/': '÷', '-': '−', '+': '+' };
-      return tokens.map(token => map[token] || token).join(' ');
+      return list.map(token => DISPLAY_MAP[token] || token).join(' ');
     }
 
     function normalizeNumber(str) {
@@ -224,6 +225,8 @@
       }
 
       const value = current();
+      const digitCount = value.replace(/[^0-9]/g, '').length;
+      if (!overwriteNumber && digitCount >= MAX_DIGITS) return;
       if (overwriteNumber) {
         setCurrent(digit);
         overwriteNumber = false;
@@ -278,11 +281,14 @@
 
     function backspace() {
       if (errorState || justEvaluated) return clearAll();
-      if (overwriteNumber && tokens.length > 1) {
-        setCurrent('0');
+      if (overwriteNumber) {
+        if (tokens.length > 1) {
+          tokens.splice(-2, 2);
+          overwriteNumber = false;
+          update();
+          return;
+        }
         overwriteNumber = false;
-        update();
-        return;
       }
       const value = current();
       if (value.length <= 1 || (value.length === 2 && value.startsWith('-'))) {
@@ -295,14 +301,15 @@
 
     function toggleSign() {
       resetIfError();
+      justEvaluated = false;
       const value = current();
-      if (value === '0' && tokens.length === 1 && justEvaluated) justEvaluated = false;
       setCurrent(value.startsWith('-') ? value.slice(1) : '-' + value);
       update();
     }
 
     function percent() {
       resetIfError();
+      justEvaluated = false;
       const value = Number(current());
       if (!Number.isFinite(value)) {
         errorState = true;
@@ -363,7 +370,7 @@
 
       try {
         const result = evaluateTokens(expr);
-        exprEl.textContent = formatExpr() + ' =';
+        exprEl.textContent = formatExpr(expr) + ' =';
         resultEl.textContent = toDisplayNumber(result);
         tokens = [toDisplayNumber(result)];
         overwriteNumber = false;
@@ -404,6 +411,8 @@
       if (key === 'Backspace') return backspace();
       if (key === 'Escape' || key.toLowerCase() === 'c') return clearAll();
       if (key === '%') return percent();
+      if (key.toLowerCase() === 'p') return percent();
+      if (key.toLowerCase() === 's') return toggleSign();
     });
 
     update();
