@@ -85,15 +85,15 @@ curl -X POST "https://api.notion.com/v1/data_sources/{data_source_id}/query" \
   }'
 ```
 
-**Create a data source (database):**
+**Create a database (container):**
 ```bash
-curl -X POST "https://api.notion.com/v1/data_sources" \
+curl -X POST "https://api.notion.com/v1/databases" \
   -H "Authorization: Bearer $NOTION_KEY" \
   -H "Notion-Version: 2025-09-03" \
   -H "Content-Type: application/json" \
   -d '{
-    "parent": {"page_id": "xxx"},
-    "title": [{"text": {"content": "My Database"}}],
+    "parent": {"type": "page_id", "page_id": "xxx"},
+    "title": [{"type": "text", "text": {"content": "My Database"}}],
     "properties": {
       "Name": {"title": {}},
       "Status": {"select": {"options": [{"name": "Todo"}, {"name": "Done"}]}},
@@ -101,6 +101,8 @@ curl -X POST "https://api.notion.com/v1/data_sources" \
     }
   }'
 ```
+
+> Important: on this machine / API version, `POST /v1/data_sources` for creation returns a validation error telling you to use `POST /v1/databases` instead. After creating a database, query via the returned `data_source_id`.
 
 **Update page properties:**
 ```bash
