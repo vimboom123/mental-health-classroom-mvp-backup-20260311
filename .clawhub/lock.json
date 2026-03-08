@@ -60,6 +60,14 @@
     "agent-browser": {
       "version": "0.2.0",
       "installedAt": 1772948612050
+    },
+    "powerpoint-pptx": {
+      "version": "1.0.0",
+      "installedAt": 1772960148016
+    },
+    "slides": {
+      "version": "1.0.0",
+      "installedAt": 1772960188165
     }
   }
 }
