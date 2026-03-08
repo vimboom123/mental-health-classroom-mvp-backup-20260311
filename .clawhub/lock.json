@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "skills": {
+    "self-improving-agent": {
+      "version": "1.0.11",
+      "installedAt": 1772844904489
+    },
+    "find-skills": {
+      "version": "0.1.0",
+      "installedAt": 1772940071627
+    },
+    "session-logs": {
+      "version": "1.0.0",
+      "installedAt": 1772844919393
+    },
+    "amap": {
+      "version": "1.0.0",
+      "installedAt": 1772937061005
+    },
+    "amap-traffic": {
+      "version": "1.0.0",
+      "installedAt": 1772937064001
+    },
+    "icloud-findmy": {
+      "version": "1.0.0",
+      "installedAt": 1772937448762
+    },
+    "word-docx": {
+      "version": "1.0.0",
+      "installedAt": 1772940034415
+    },
+    "docx-cn": {
+      "version": "1.0.1",
+      "installedAt": 1772940042607
+    }
+  }
+}
