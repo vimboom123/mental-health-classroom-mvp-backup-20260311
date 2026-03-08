@@ -158,7 +158,7 @@
       <button class="eq" data-action="equal">＝</button>
     </section>
 
-    <div class="hint">支持键盘输入 · C 清空 · Backspace 删除</div>
+    <div class="hint">支持键盘输入 · C / Esc / Delete 清空 · Backspace 删除</div>
   </main>
 
   <script>
@@ -261,13 +261,13 @@
 
     function inputOperator(op) {
       resetIfError();
-      if (isOperator(current())) {
-        setCurrent(op);
+      if (overwriteNumber && tokens.length > 1) {
+        tokens[tokens.length - 2] = op;
       } else {
         if (justEvaluated) justEvaluated = false;
         tokens.push(op, '0');
+        overwriteNumber = true;
       }
-      overwriteNumber = true;
       update();
     }
 
@@ -304,6 +304,7 @@
       justEvaluated = false;
       const value = current();
       setCurrent(value.startsWith('-') ? value.slice(1) : '-' + value);
+      overwriteNumber = false;
       update();
     }
 
@@ -314,7 +315,16 @@
       if (!Number.isFinite(value)) {
         errorState = true;
       } else {
-        setCurrent(toDisplayNumber(value / 100));
+        let nextValue = value / 100;
+        if (tokens.length >= 3 && isOperator(tokens[tokens.length - 2])) {
+          const baseValue = Number(tokens[tokens.length - 3]);
+          const operator = tokens[tokens.length - 2];
+          if (Number.isFinite(baseValue) && (operator === '+' || operator === '-')) {
+            nextValue = (baseValue * value) / 100;
+          }
+        }
+        setCurrent(toDisplayNumber(nextValue));
+        overwriteNumber = false;
       }
       update();
     }
@@ -365,14 +375,15 @@
 
     function calculate() {
       resetIfError();
-      const expr = isOperator(current()) ? tokens.slice(0, -2) : tokens.slice();
+      const expr = overwriteNumber && tokens.length > 1 ? tokens.slice(0, -2) : tokens.slice();
       if (!expr.length) return clearAll();
 
       try {
         const result = evaluateTokens(expr);
+        const displayResult = toDisplayNumber(result);
         exprEl.textContent = formatExpr(expr) + ' =';
-        resultEl.textContent = toDisplayNumber(result);
-        tokens = [toDisplayNumber(result)];
+        resultEl.textContent = displayResult;
+        tokens = [displayResult];
         overwriteNumber = false;
         justEvaluated = true;
         errorState = false;
@@ -399,20 +410,44 @@
       if (action === 'equal') return calculate();
     });
 
+    function isEditableTarget(target) {
+      return Boolean(
+        target &&
+        (
+          target.isContentEditable ||
+          (typeof target.closest === 'function' && target.closest('input, textarea, select, [contenteditable="true"]'))
+        )
+      );
+    }
+
+    function keyboardAction(key) {
+      if (/^\d$/u.test(key)) return () => inputDigit(key);
+      if (key === '.') return () => inputDecimal();
+      if (operators.has(key)) return () => inputOperator(key);
+      if (key === 'x' || key === 'X') return () => inputOperator('*');
+      if (key === 'Enter' || key === '=') return () => calculate();
+      if (key === 'Backspace') return () => backspace();
+      if (key === 'Delete' || key === 'Escape' || key.toLowerCase() === 'c') return () => clearAll();
+      if (key === '%' || key.toLowerCase() === 'p') return () => percent();
+      if (key.toLowerCase() === 's') return () => toggleSign();
+      return null;
+    }
+
     window.addEventListener('keydown', event => {
-      const { key } = event;
-      if (/^\d$/u.test(key)) return inputDigit(key);
-      if (key === '.') return inputDecimal();
-      if (operators.has(key)) return inputOperator(key);
-      if (key === 'Enter' || key === '=') {
-        event.preventDefault();
-        return calculate();
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isEditableTarget(event.target)) return;
+      if (
+        typeof event.target?.closest === 'function' &&
+        event.target.closest('button') &&
+        (event.key === 'Enter' || event.key === ' ')
+      ) {
+        return;
       }
-      if (key === 'Backspace') return backspace();
-      if (key === 'Escape' || key.toLowerCase() === 'c') return clearAll();
-      if (key === '%') return percent();
-      if (key.toLowerCase() === 'p') return percent();
-      if (key.toLowerCase() === 's') return toggleSign();
+
+      const action = keyboardAction(event.key);
+      if (!action) return;
+      event.preventDefault();
+      action();
     });
 
     update();
