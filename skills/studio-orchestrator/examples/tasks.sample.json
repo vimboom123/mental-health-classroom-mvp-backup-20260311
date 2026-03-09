@@ -1,0 +1,35 @@
+{
+  "tasks": [
+    {
+      "id": "a1b2c3d4",
+      "title": "Manuscript revision",
+      "type": "doc",
+      "goal": "合并 reviewer 意见并持续改稿直至可提交",
+      "status": "in_progress",
+      "phase": "review_merge",
+      "next": "把 Qwen / Oracle / Claude Code 三方意见并单成修改清单",
+      "owner": "main-agent",
+      "artifacts": [
+        "lexar/shit-template/manuscript_final.md",
+        "lexar/shit-template/reviews/qwen.md"
+      ],
+      "blocker": null,
+      "created_at": "2026-03-09T14:30:00+08:00",
+      "updated_at": "2026-03-09T14:41:00+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T14:30:00+08:00",
+          "message": "task created"
+        },
+        {
+          "time": "2026-03-09T14:35:00+08:00",
+          "message": "已取回 Gemini reviewer"
+        },
+        {
+          "time": "2026-03-09T14:41:00+08:00",
+          "message": "等待 Qwen reviewer 返回后并单"
+        }
+      ]
+    }
+  ]
+}

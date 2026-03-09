@@ -1,0 +1,123 @@
+# studio-orchestrator
+
+通用“工作室模式持续推进”技能。
+
+## 什么时候用
+
+当任务不是一次性回答，而是需要在后台持续推进、分阶段执行、主动汇报时使用。
+
+典型场景：
+- 文档类：reviewer → 并单 → 改稿 → 复审 → 汇报
+- 代码类：拆工 → 实现 → reviewer → 测试/回归 → 汇报
+- 工程类：调查 → 执行 → 验证 → 下一步 → 汇报
+- 用户明确说“启动工作室模式”“持续推进”“别等我催”“挂后台继续做”
+
+## 核心原则
+
+- 只要任务不处于“明确等待用户决策”，就继续推进。
+- 主对话被新消息打断，不等于旧任务结束。
+- 新任务插入时，旧任务进入后台跟踪，除非存在明确资源冲突或优先级冲突。
+- 每个任务都必须可审计：当前阶段、下一步、最近推进时间、产物路径、日志路径。
+- 只有在真正需要用户拍板时，才停下来问。
+
+## 目录结构
+
+- `state/tasks.json`：任务注册表
+- `scripts/studio_task.py`：任务注册/状态变更/查看 CLI
+- `examples/tasks.sample.json`：示例状态文件
+
+## 最小工作流
+
+1. 注册任务
+2. 标注任务类型（doc/code/engineering/general）
+3. 记录当前阶段、下一步、负责人、产物路径
+4. 每次推进后更新时间
+5. 遇到阻塞时写明阻塞原因和所需决策
+
+## 常用命令
+
+注册任务：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_task.py create \
+  --title "Manuscript revision" \
+  --type doc \
+  --goal "合并 reviewer 意见并持续改稿直至可提交"
+```
+
+查看所有任务：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_task.py list
+```
+
+推进任务状态：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_task.py update <task_id> \
+  --status in_progress \
+  --phase revise \
+  --next "继续修改 discussion section" \
+  --owner main-agent
+```
+
+追加日志：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_task.py log <task_id> "已取回 Qwen reviewer，开始并单"
+```
+
+标记阻塞：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_task.py update <task_id> \
+  --status blocked \
+  --blocker "需要用户决定是否保留激进结论表述"
+```
+
+## 状态约定
+
+- `queued`：已登记，未开始
+- `in_progress`：正在推进
+- `waiting_reviewer`：等待 reviewer / 子代理结果
+- `waiting_user`：等待用户决策
+- `blocked`：外部阻塞
+- `done`：已完成
+- `cancelled`：已取消
+
+## 阶段建议
+
+### 文档类
+- intake
+- review_collect
+- review_merge
+- revise
+- polish
+- final_check
+- report
+
+### 代码类
+- intake
+- plan
+- implement
+- review
+- test
+- fixup
+- report
+
+### 工程类
+- intake
+- investigate
+- execute
+- verify
+- iterate
+- report
+
+## 备注
+
+这是第一版骨架 skill。它先解决“任务必须被登记、可追踪、可持续推进”这个问题。
+后续可以继续接：
+- 自动轮询子进程/后台 session
+- 规则化主动汇报
+- 工作室模式统一入口
+- reviewer / agent dispatch 适配器

@@ -1,0 +1,27 @@
+{
+  "tasks": [
+    {
+      "id": "f7d962a1",
+      "title": "Studio orchestrator skill build",
+      "type": "engineering",
+      "goal": "把工作室模式持续推进做成通用 skill，供文档/代码/工程任务共用",
+      "status": "in_progress",
+      "phase": "implement",
+      "next": "补 runner / heartbeat / session integration 设计",
+      "owner": "main-agent",
+      "artifacts": [
+        "skills/studio-orchestrator/SKILL.md",
+        "skills/studio-orchestrator/scripts/studio_task.py"
+      ],
+      "blocker": null,
+      "created_at": "2026-03-09T14:55:11+08:00",
+      "updated_at": "2026-03-09T14:55:11+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T14:55:11+08:00",
+          "message": "用户已确认：正式做成通用 skill"
+        }
+      ]
+    }
+  ]
+}
