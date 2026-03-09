@@ -27,28 +27,33 @@ def gate(task):
     artifacts = task.get("artifacts") or []
     logs = "\n".join(x.get("message", "") for x in task.get("logs", []))
     dispatch = task.get("dispatch_history") or task.get("dispatch_plan") or []
+    completion = task.get("completion_evidence")
 
     checks = []
-
     checks.append({"name": "phase_is_report", "ok": phase == "report", "reason": "current phase is not report" if phase != "report" else ""})
+    checks.append({"name": "completion_evidence_present", "ok": bool(completion), "reason": "missing substantive completion evidence" if not completion else ""})
 
     if task_type == "doc":
         has_artifact = any(str(x).endswith(".md") for x in artifacts)
         checks.append({"name": "has_md_artifact", "ok": has_artifact, "reason": "missing markdown artifact" if not has_artifact else ""})
-
         has_final_check = "final_check" in logs or "最终检查" in logs
         checks.append({"name": "final_check_seen", "ok": has_final_check, "reason": "no final_check evidence in logs" if not has_final_check else ""})
-
         review_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") in {"review", "second-opinion", "cn-review"})
         checks.append({"name": "review_done", "ok": review_done, "reason": "no review-like dispatch done" if not review_done else ""})
-
         orchestration_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") == "orchestration")
         checks.append({"name": "orchestration_done", "ok": orchestration_done, "reason": "main-agent orchestration not done" if not orchestration_done else ""})
-
         final_report_evidence = ("最终汇报" in logs) or ("final report" in logs.lower()) or ("输出变更摘要" in logs)
         checks.append({"name": "final_report_evidence", "ok": final_report_evidence, "reason": "no final report evidence in logs" if not final_report_evidence else ""})
+    elif task_type == "code":
+        checks.append({"name": "artifact_present", "ok": bool(artifacts), "reason": "no code artifact recorded" if not artifacts else ""})
+        review_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") in {"review", "orchestration"})
+        checks.append({"name": "review_or_orchestration_done", "ok": review_done, "reason": "no review/orchestration dispatch done" if not review_done else ""})
+    elif task_type == "engineering":
+        checks.append({"name": "artifact_present", "ok": bool(artifacts), "reason": "no engineering artifact recorded" if not artifacts else ""})
+        orchestration_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") == "orchestration")
+        checks.append({"name": "orchestration_done", "ok": orchestration_done, "reason": "no orchestration dispatch done" if not orchestration_done else ""})
     else:
-        checks.append({"name": "generic_artifact_present", "ok": bool(artifacts), "reason": "no artifact recorded" if not artifacts else ""})
+        checks.append({"name": "artifact_or_summary_present", "ok": bool(artifacts) or bool(completion), "reason": "no artifact or completion summary recorded" if not (artifacts or completion) else ""})
 
     ok = all(item["ok"] for item in checks)
     return {"ok": ok, "checks": checks}

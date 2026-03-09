@@ -37,7 +37,8 @@
 - `scripts/studio_dispatch_plan.py`：把动作建议转成可执行派工计划（当前活跃队列）并维护 `dispatch_history`；任务进入 done 后不再生成新的 active dispatch
 - `scripts/studio_dispatch_queue.py`：把派工计划升级成真实执行队列状态机，并同步写回 `dispatch_history`
 - `scripts/studio_dispatch_run.py`：最小 dispatcher，推进 queued/running/done
-- `scripts/studio_completion_gate.py`：真实完成条件检查，未满足时禁止自动 done（文档类默认要求 report 阶段 + final_check 证据 + reviewer 完成 + main-agent orchestration 完成 + final report 证据）
+- `scripts/studio_completion_gate.py`：真实完成条件检查，未满足时禁止自动 done；所有任务类型都要求显式 `completion_evidence`，文档/代码/工程再叠加各自的产物与审查门槛
+- `scripts/studio_mark_complete.py`：由主智能体在确认“内容/代码/工程结果已真正闭环”后写入显式完成证据
 - `scripts/studio_sync_task_state.py`：修复 task 的 status / phase / progress 不一致
 - `scripts/studio_stall_check.py`：检测后台空转/停滞
 - `scripts/studio_migrate_dispatch_history.py`：把旧 `step-*` 派工记录标记为 legacy，便于稳定 id 迁移

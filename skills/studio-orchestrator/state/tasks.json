@@ -712,8 +712,8 @@
       "title": "Paper revision - manuscript_final",
       "type": "doc",
       "goal": "继续推进 AI 采纳论文终稿改写并主动汇报",
-      "status": "done",
-      "phase": "done",
+      "status": "in_progress",
+      "phase": "report",
       "next": "论文改写任务完成",
       "owner": "main-agent",
       "artifacts": [
@@ -865,6 +865,14 @@
         {
           "time": "2026-03-09T16:47:58+08:00",
           "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T16:50:20+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T16:56:22+08:00",
+          "message": "completion evidence marked: 已完成 reviewer 意见汇总、关键段落改写、最终汇报与主智能体验收"
         }
       ],
       "agent_plan": [
@@ -908,19 +916,7 @@
           "action": "主智能体负责统筹、验收、汇报、必要时拍板升级"
         }
       ],
-      "dispatch_plan": [
-        {
-          "id": "c7783c41-done-main-agent-main",
-          "agent": "main",
-          "kind": "orchestration",
-          "role": "main-agent",
-          "phase": "done",
-          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
-          "status": "planned",
-          "updated_at": null,
-          "note": null
-        }
-      ],
+      "dispatch_plan": [],
       "scheduler": {
         "eligible": true,
         "score": 70,
@@ -990,7 +986,13 @@
           "updated_at": null,
           "note": null
         }
-      ]
+      ],
+      "completion_evidence": {
+        "kind": "doc",
+        "summary": "已完成 reviewer 意见汇总、关键段落改写、最终汇报与主智能体验收",
+        "marked_at": "2026-03-09T16:56:22+08:00",
+        "marked_by": "main-agent"
+      }
     }
   ]
 }
