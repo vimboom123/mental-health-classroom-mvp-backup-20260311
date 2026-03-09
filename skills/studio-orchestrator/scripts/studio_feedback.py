@@ -53,6 +53,9 @@ def render(task):
     if progress.get("status_text"):
         parts.append(f"当前：{progress['status_text']}")
     parts.append(f"状态：{task.get('status')} / 阶段：{task.get('phase')}")
+    plan = task.get("agent_plan") or []
+    if plan:
+        parts.append("分工：" + "；".join(f"{x['agent']}={x['responsibility']}" for x in plan[:3]))
     parts.append(f"下一步：{task.get('next') or '-'}")
     return "\n".join(parts)
 

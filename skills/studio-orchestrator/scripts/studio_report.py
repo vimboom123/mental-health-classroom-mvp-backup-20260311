@@ -48,6 +48,10 @@ def render(task):
     ]
     if task.get("blocker"):
         bits.append(f"阻塞：{task['blocker']}")
+    plan = task.get("agent_plan") or []
+    if plan:
+        summary = "；".join(f"{x['agent']}={x['responsibility']}" for x in plan[:4])
+        bits.append(f"分工：{summary}")
     artifacts = task.get("artifacts") or []
     if artifacts:
         bits.append("产物：" + ", ".join(artifacts[:3]))

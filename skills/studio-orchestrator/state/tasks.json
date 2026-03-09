@@ -36,6 +36,10 @@
         {
           "time": "2026-03-09T15:30:18+08:00",
           "message": "补 ROS2-action 风格 feedback 元数据"
+        },
+        {
+          "time": "2026-03-09T15:36:47+08:00",
+          "message": "roles assigned for task type engineering"
         }
       ],
       "priority": 90,
@@ -56,7 +60,39 @@
         "channel": "telegram",
         "target": "8783735951"
       },
-      "last_report_ts": 1773041603.643896
+      "last_report_ts": 1773041603.643896,
+      "agent_plan": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 调度 / 结果整合 / 最终汇报"
+        },
+        {
+          "role": "executor",
+          "agent": "codex",
+          "responsibility": "执行主链路、脚本化落地、工程改动"
+        },
+        {
+          "role": "surface",
+          "agent": "gemini",
+          "responsibility": "表达层、展示层、说明材料"
+        },
+        {
+          "role": "reviewer",
+          "agent": "claude-code",
+          "responsibility": "审核执行结果、找问题"
+        },
+        {
+          "role": "second-opinion",
+          "agent": "oracle",
+          "responsibility": "全局复盘与补漏"
+        },
+        {
+          "role": "cn-reviewer",
+          "agent": "qwen",
+          "responsibility": "中文语境判断与中文汇总"
+        }
+      ]
     },
     {
       "id": "58729448",
