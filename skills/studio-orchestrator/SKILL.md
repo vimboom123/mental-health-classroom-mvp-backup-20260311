@@ -34,7 +34,7 @@
 - `scripts/studio_roles.py`：给文档/代码/工程任务自动分配工作室 AI 分工
 - `scripts/studio_active_roles.py`：按当前 phase 切换当前活跃 AI
 - `scripts/studio_next_actions.py`：根据当前活跃 AI 生成下一动作建议
-- `scripts/studio_dispatch_plan.py`：把动作建议转成可执行派工计划（当前活跃队列）并维护 `dispatch_history`
+- `scripts/studio_dispatch_plan.py`：把动作建议转成可执行派工计划（当前活跃队列）并维护 `dispatch_history`；任务进入 done 后不再生成新的 active dispatch
 - `scripts/studio_dispatch_queue.py`：把派工计划升级成真实执行队列状态机，并同步写回 `dispatch_history`
 - `scripts/studio_dispatch_run.py`：最小 dispatcher，推进 queued/running/done
 - `scripts/studio_completion_gate.py`：真实完成条件检查，未满足时禁止自动 done（文档类默认要求 report 阶段 + final_check 证据 + reviewer 完成 + main-agent orchestration 完成 + final report 证据）

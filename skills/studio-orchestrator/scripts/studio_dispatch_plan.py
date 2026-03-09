@@ -50,6 +50,8 @@ def stable_id(task, action):
 
 
 def build_active_plan(task):
+    if task.get('status') == 'done' or task.get('phase') == 'done':
+        return []
     existing = {item.get("id"): item for item in (task.get("dispatch_history") or [])}
     items = []
     for action in task.get("next_actions") or []:
