@@ -15,7 +15,7 @@
       ],
       "blocker": null,
       "created_at": "2026-03-09T14:55:11+08:00",
-      "updated_at": "2026-03-09T15:12:59+08:00",
+      "updated_at": "2026-03-09T15:30:18+08:00",
       "logs": [
         {
           "time": "2026-03-09T14:55:11+08:00",
@@ -32,8 +32,30 @@
         {
           "time": "2026-03-09T15:12:59+08:00",
           "message": "进入 report 阶段，准备验证 notify/decide"
+        },
+        {
+          "time": "2026-03-09T15:30:18+08:00",
+          "message": "补 ROS2-action 风格 feedback 元数据"
         }
-      ]
+      ],
+      "priority": 90,
+      "progress": {
+        "percent": 40,
+        "current": 2,
+        "total": 5,
+        "status_text": "已完成 watch/process 去重，正在做调度与反馈层",
+        "last_feedback_ts": 1773041418.704542,
+        "last_feedback_percent": 40
+      },
+      "scheduler": {
+        "eligible": true,
+        "score": 110,
+        "lastScheduledAt": "2026-03-09T15:30:18+08:00"
+      },
+      "notify": {
+        "channel": "telegram",
+        "target": "8783735951"
+      }
     },
     {
       "id": "58729448",
@@ -84,7 +106,12 @@
           "path": "/tmp/studio_review_done.txt",
           "classification": "done_signal"
         }
-      ]
+      ],
+      "scheduler": {
+        "eligible": true,
+        "score": 70,
+        "lastScheduledAt": "2026-03-09T15:30:18+08:00"
+      }
     },
     {
       "id": "5e4608a9",
@@ -143,7 +170,12 @@
           "path": "/tmp/process-watch-demo.log",
           "classification": "neutral"
         }
-      ]
+      ],
+      "scheduler": {
+        "eligible": true,
+        "score": 70,
+        "lastScheduledAt": "2026-03-09T15:30:18+08:00"
+      }
     },
     {
       "id": "9d8dec78",
@@ -217,7 +249,12 @@
           "classification": "done_signal",
           "fingerprint": "e9a9f26798169da85364adfd86dddd537b3d9c7b22cd0d005fa8cfa84fa8e1a9"
         }
-      ]
+      ],
+      "scheduler": {
+        "eligible": false,
+        "score": 70,
+        "lastScheduledAt": null
+      }
     },
     {
       "id": "bd07dc88",
@@ -273,7 +310,12 @@
           "classification": "done_signal",
           "fingerprint": "e9a9f26798169da85364adfd86dddd537b3d9c7b22cd0d005fa8cfa84fa8e1a9"
         }
-      ]
+      ],
+      "scheduler": {
+        "eligible": false,
+        "score": 70,
+        "lastScheduledAt": null
+      }
     },
     {
       "id": "d2ccc241",
@@ -327,7 +369,12 @@
           "fingerprint": "68decc34d5416e6f0fe2a973e2adfda1811f54a719907aae7378d220251f65fc",
           "offset": 24
         }
-      ]
+      ],
+      "scheduler": {
+        "eligible": false,
+        "score": 70,
+        "lastScheduledAt": null
+      }
     },
     {
       "id": "10f98925",
@@ -376,7 +423,12 @@
           "fingerprint": "e9a9f26798169da85364adfd86dddd537b3d9c7b22cd0d005fa8cfa84fa8e1a9",
           "offset": 16
         }
-      ]
+      ],
+      "scheduler": {
+        "eligible": false,
+        "score": 70,
+        "lastScheduledAt": null
+      }
     }
   ]
 }

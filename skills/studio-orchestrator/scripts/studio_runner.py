@@ -15,6 +15,7 @@ WATCH_PY = os.path.join(BASE_DIR, "scripts", "studio_watch.py")
 PROCESS_WATCH_PY = os.path.join(BASE_DIR, "scripts", "studio_process_watch.py")
 DECIDE_PY = os.path.join(BASE_DIR, "scripts", "studio_decide.py")
 NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_notify.py")
+FEEDBACK_NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_feedback_notify.py")
 
 
 def now_iso():
@@ -109,6 +110,14 @@ def maybe_notify(task, min_interval):
     return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
 
 
+def maybe_feedback_notify(task, min_interval=600, min_progress_step=10):
+    notify = task.get("notify") or {}
+    if not notify.get("target"):
+        return None
+    res = call_py(FEEDBACK_NOTIFY_PY, "--task-id", task.get("id"), "--min-interval", str(min_interval), "--min-progress-step", str(min_progress_step), check=False)
+    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
+
+
 def tick_once(verbose=False, notify_min_interval=1800):
     ensure_store()
     runner = load_json(RUNNER_STATE_FILE)
@@ -178,6 +187,10 @@ def tick_once(verbose=False, notify_min_interval=1800):
                 })
                 store = load_json(TASKS_FILE)
                 refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
+
+        feedback_res = maybe_feedback_notify(refreshed)
+        if feedback_res:
+            side_effects.append({"task_id": task_id, "feedback_notify": feedback_res})
 
         notify_res = maybe_notify(refreshed, notify_min_interval)
         if notify_res:

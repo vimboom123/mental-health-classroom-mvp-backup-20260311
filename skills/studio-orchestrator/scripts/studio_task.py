@@ -71,6 +71,14 @@ def cmd_create(args):
             "channel": args.notify_channel,
             "target": args.notify_target,
         } if args.notify_target else None,
+        "priority": args.priority,
+        "progress": {
+            "percent": args.progress_percent,
+            "current": args.progress_current,
+            "total": args.progress_total,
+            "status_text": args.progress_status,
+            "last_feedback_ts": None,
+        },
         "blocker": args.blocker,
         "created_at": ts,
         "updated_at": ts,
@@ -132,6 +140,19 @@ def cmd_update(args):
         task.setdefault("artifacts", [])
         task["artifacts"].extend(args.artifact)
         changed = True
+    if args.priority is not None:
+        task["priority"] = args.priority
+        changed = True
+    progress = task.setdefault("progress", {})
+    for key, value in [
+        ("percent", args.progress_percent),
+        ("current", args.progress_current),
+        ("total", args.progress_total),
+        ("status_text", args.progress_status),
+    ]:
+        if value is not None:
+            progress[key] = value
+            changed = True
     if args.clear_blocker:
         task["blocker"] = None
         changed = True
@@ -172,6 +193,11 @@ def build_parser():
     c.add_argument("--watch-process-log", action="append")
     c.add_argument("--notify-channel", default="telegram")
     c.add_argument("--notify-target")
+    c.add_argument("--priority", type=int, default=50)
+    c.add_argument("--progress-percent", type=int, default=0)
+    c.add_argument("--progress-current", type=int, default=0)
+    c.add_argument("--progress-total", type=int, default=0)
+    c.add_argument("--progress-status", default="")
     c.add_argument("--blocker")
     c.add_argument("--log")
     c.set_defaults(func=cmd_create)
@@ -193,6 +219,11 @@ def build_parser():
     u.add_argument("--next", dest="next_step")
     u.add_argument("--owner")
     u.add_argument("--artifact", action="append")
+    u.add_argument("--priority", type=int)
+    u.add_argument("--progress-percent", type=int)
+    u.add_argument("--progress-current", type=int)
+    u.add_argument("--progress-total", type=int)
+    u.add_argument("--progress-status")
     u.add_argument("--blocker")
     u.add_argument("--clear-blocker", action="store_true")
     u.add_argument("--log")
