@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+from datetime import datetime, timezone
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_DIR = os.path.join(BASE_DIR, "state")
@@ -15,6 +16,10 @@ DISPATCH_KIND = {
     "qwen": "cn-review",
     "main": "orchestration",
 }
+
+
+def now_iso():
+    return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 
 
 def load_tasks():
@@ -37,22 +42,47 @@ def find_task(data, task_id):
     return None
 
 
-def build_plan(task):
+def stable_id(task, action):
+    phase = task.get("phase") or "unknown"
+    role = (action.get("role") or "role").replace("_", "-")
+    agent = (action.get("agent") or "agent").replace("_", "-")
+    return f"{task['id']}-{phase}-{role}-{agent}"
+
+
+def build_active_plan(task):
+    existing = {item.get("id"): item for item in (task.get("dispatch_history") or [])}
     items = []
-    for idx, action in enumerate(task.get("next_actions") or [], start=1):
+    for action in task.get("next_actions") or []:
+        item_id = stable_id(task, action)
+        prev = existing.get(item_id, {})
         items.append({
-            "id": f"{task['id']}-step-{idx}",
+            "id": item_id,
             "agent": action.get("agent"),
             "kind": DISPATCH_KIND.get(action.get("agent"), "general"),
             "role": action.get("role"),
+            "phase": task.get("phase"),
             "instruction": action.get("action"),
-            "status": "planned",
+            "status": prev.get("status", "planned"),
+            "updated_at": prev.get("updated_at"),
+            "note": prev.get("note"),
         })
     return items
 
 
+def merge_history(task, active_items):
+    history = task.get("dispatch_history") or []
+    by_id = {item.get("id"): item for item in history}
+    for item in active_items:
+        existing = by_id.get(item["id"])
+        if existing:
+            existing.update({k: v for k, v in item.items() if v is not None})
+        else:
+            history.append(dict(item))
+    return history
+
+
 def main():
-    parser = argparse.ArgumentParser(description="build a dispatch plan from next actions")
+    parser = argparse.ArgumentParser(description="build active dispatch plan and preserve full dispatch history")
     parser.add_argument("task_id")
     args = parser.parse_args()
 
@@ -61,10 +91,12 @@ def main():
     if not task:
         raise SystemExit(f"task not found: {args.task_id}")
 
-    plan = build_plan(task)
-    task["dispatch_plan"] = plan
+    active_plan = build_active_plan(task)
+    task["dispatch_plan"] = active_plan
+    task["dispatch_history"] = merge_history(task, active_plan)
+    task.setdefault("logs", []).append({"time": now_iso(), "message": "dispatch plan refreshed"})
     save_tasks(data)
-    print(json.dumps({"task_id": task["id"], "dispatch_plan": plan}, ensure_ascii=False, indent=2))
+    print(json.dumps({"task_id": task["id"], "dispatch_plan": active_plan, "dispatch_history": task["dispatch_history"]}, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

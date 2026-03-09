@@ -727,12 +727,12 @@
       },
       "priority": 50,
       "progress": {
-        "percent": 100,
+        "percent": 90,
         "current": 8,
         "total": 8,
-        "status_text": "当前阶段：done",
-        "last_feedback_ts": 1773043393.024809,
-        "last_feedback_percent": 85
+        "status_text": "当前阶段：report",
+        "last_feedback_ts": 1773044168.747859,
+        "last_feedback_percent": 90
       },
       "blocker": null,
       "created_at": "2026-03-09T15:53:41+08:00",
@@ -821,6 +821,14 @@
         {
           "time": "2026-03-09T16:07:09+08:00",
           "message": "active roles refreshed for phase done"
+        },
+        {
+          "time": "2026-03-09T16:18:20+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T16:24:59+08:00",
+          "message": "dispatch plan refreshed"
         }
       ],
       "agent_plan": [
@@ -866,24 +874,69 @@
       ],
       "dispatch_plan": [
         {
-          "id": "c7783c41-step-1",
+          "id": "c7783c41-report-main-agent-main",
           "agent": "main",
           "kind": "orchestration",
           "role": "main-agent",
+          "phase": "report",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
-          "status": "planned"
+          "status": "planned",
+          "updated_at": null,
+          "note": null
         }
       ],
       "scheduler": {
-        "eligible": false,
-        "score": 50,
-        "lastScheduledAt": "2026-03-09T16:07:08+08:00"
+        "eligible": true,
+        "score": 70,
+        "lastScheduledAt": "2026-03-09T16:17:16+08:00"
       },
       "runtime": {
         "mode": "background-daemon",
         "session_id": "glow-tidepool",
         "started_by": "main-agent"
-      }
+      },
+      "last_report_ts": 1773044070.368375,
+      "dispatch_history": [
+        {
+          "id": "c7783c41-step-1",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned",
+          "updated_at": "2026-03-09T16:05:06+08:00",
+          "note": "review completed"
+        },
+        {
+          "id": "c7783c41-step-2",
+          "agent": "oracle",
+          "kind": "second-opinion",
+          "role": "second-opinion",
+          "instruction": "交给 Oracle 做全局复盘和第二视角审阅",
+          "status": "done",
+          "updated_at": "2026-03-09T16:05:06+08:00",
+          "note": "oracle completed"
+        },
+        {
+          "id": "c7783c41-step-3",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned"
+        },
+        {
+          "id": "c7783c41-report-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "report",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        }
+      ]
     }
   ]
 }

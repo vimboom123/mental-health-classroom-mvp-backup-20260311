@@ -61,6 +61,11 @@ def render(task):
     dispatch = task.get("dispatch_plan") or []
     if dispatch:
         bits.append("派工计划：" + "；".join(f"{x['agent']}[{x['kind']}/{x['status']}]" for x in dispatch[:3]))
+    history = task.get("dispatch_history") or []
+    if history:
+        done_items = [x for x in history if x.get('status') == 'done']
+        if done_items:
+            bits.append("已完成派工：" + "；".join(f"{x['agent']}[{x['kind']}]" for x in done_items[:3]))
     artifacts = task.get("artifacts") or []
     if artifacts:
         bits.append("产物：" + ", ".join(artifacts[:3]))

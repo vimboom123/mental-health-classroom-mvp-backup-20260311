@@ -34,10 +34,12 @@
 - `scripts/studio_roles.py`：给文档/代码/工程任务自动分配工作室 AI 分工
 - `scripts/studio_active_roles.py`：按当前 phase 切换当前活跃 AI
 - `scripts/studio_next_actions.py`：根据当前活跃 AI 生成下一动作建议
-- `scripts/studio_dispatch_plan.py`：把动作建议转成可执行派工计划
-- `scripts/studio_dispatch_queue.py`：把派工计划升级成真实执行队列状态机
+- `scripts/studio_dispatch_plan.py`：把动作建议转成可执行派工计划（当前活跃队列）并维护 `dispatch_history`
+- `scripts/studio_dispatch_queue.py`：把派工计划升级成真实执行队列状态机，并同步写回 `dispatch_history`
 - `scripts/studio_dispatch_run.py`：最小 dispatcher，推进 queued/running/done
 - `scripts/studio_completion_gate.py`：真实完成条件检查，未满足时禁止自动 done（文档类默认要求 report 阶段 + final_check 证据 + reviewer 完成 + main-agent orchestration 完成 + final report 证据）
+- `scripts/studio_sync_task_state.py`：修复 task 的 status / phase / progress 不一致
+- `scripts/studio_stall_check.py`：检测后台空转/停滞
 - `scripts/studio_feedback.py`：像 ROS2 action feedback 一样输出阶段性进度
 - `scripts/studio_feedback_notify.py`：把阶段性进度主动发到消息层
 - `scripts/studio_report.py`：筛出应该主动汇报的任务

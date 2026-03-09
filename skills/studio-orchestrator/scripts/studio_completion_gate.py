@@ -26,7 +26,7 @@ def gate(task):
     phase = task.get("phase")
     artifacts = task.get("artifacts") or []
     logs = "\n".join(x.get("message", "") for x in task.get("logs", []))
-    dispatch = task.get("dispatch_plan") or []
+    dispatch = task.get("dispatch_history") or task.get("dispatch_plan") or []
 
     checks = []
 

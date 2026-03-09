@@ -22,6 +22,8 @@ NEXT_ACTIONS_PY = os.path.join(BASE_DIR, "scripts", "studio_next_actions.py")
 DISPATCH_PLAN_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_plan.py")
 COMPLETION_GATE_PY = os.path.join(BASE_DIR, "scripts", "studio_completion_gate.py")
 TASK_PY = os.path.join(BASE_DIR, "scripts", "studio_task.py")
+SYNC_TASK_PY = os.path.join(BASE_DIR, "scripts", "studio_sync_task_state.py")
+STALL_CHECK_PY = os.path.join(BASE_DIR, "scripts", "studio_stall_check.py")
 
 TERMINAL_STATUSES = {"done", "cancelled", "waiting_user", "blocked", "failed"}
 ACTIVE_STATUSES = {"queued", "in_progress", "waiting_reviewer"}
@@ -264,6 +266,7 @@ def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
         if decide_res:
             side_effects.append({"task_id": task_id, "decide": decide_res})
 
+        call_py(SYNC_TASK_PY, task_id, check=False)
         store = load_json(TASKS_FILE)
         refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), task)
 
@@ -286,6 +289,12 @@ def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
             store = load_json(TASKS_FILE)
             refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
             safety += 1
+
+        stall_res = call_py(STALL_CHECK_PY, task_id, "--stall-seconds", "180", check=False)
+        if stall_res.returncode == 0:
+            stall_payload = json.loads(stall_res.stdout or '{}')
+            if stall_payload.get('stalled'):
+                side_effects.append({"task_id": task_id, "stalled": stall_payload})
 
         feedback_res = maybe_feedback_notify(refreshed)
         if feedback_res:

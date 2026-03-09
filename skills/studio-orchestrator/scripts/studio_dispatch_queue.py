@@ -43,6 +43,7 @@ def ensure_ids(task):
         if "status" not in item:
             item["status"] = "planned"
             changed = True
+    task.setdefault("dispatch_history", [])
     return changed
 
 
@@ -79,6 +80,9 @@ def main():
             if item.get("status") == "planned":
                 item["status"] = "queued"
                 item["updated_at"] = now_iso()
+                for hist in task.get("dispatch_history") or []:
+                    if hist.get("id") == item.get("id"):
+                        hist.update(item)
                 task.setdefault("logs", []).append({"time": now_iso(), "message": f"dispatch queued: {item['id']}"})
                 save_tasks(data)
                 print(json.dumps(item, ensure_ascii=False, indent=2))
@@ -92,6 +96,9 @@ def main():
             item["updated_at"] = now_iso()
             if args.note:
                 item["note"] = args.note
+            for hist in task.get("dispatch_history") or []:
+                if hist.get("id") == item.get("id"):
+                    hist.update(item)
             task.setdefault("logs", []).append({"time": now_iso(), "message": f"dispatch {args.status}: {item['id']}"})
             save_tasks(data)
             print(json.dumps(item, ensure_ascii=False, indent=2))
