@@ -59,6 +59,9 @@ def render(task):
     active = task.get("active_roles") or []
     if active:
         parts.append("当前活跃：" + "；".join(f"{x['agent']}({x['role']})" for x in active))
+    actions = task.get("next_actions") or []
+    if actions:
+        parts.append("动作建议：" + "；".join(f"{x['agent']}→{x['action']}" for x in actions[:3]))
     parts.append(f"下一步：{task.get('next') or '-'}")
     return "\n".join(parts)
 

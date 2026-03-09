@@ -55,6 +55,9 @@ def render(task):
     active = task.get("active_roles") or []
     if active:
         bits.append("当前活跃：" + "；".join(f"{x['agent']}({x['role']})" for x in active))
+    actions = task.get("next_actions") or []
+    if actions:
+        bits.append("动作建议：" + "；".join(f"{x['agent']}→{x['action']}" for x in actions[:3]))
     artifacts = task.get("artifacts") or []
     if artifacts:
         bits.append("产物：" + ", ".join(artifacts[:3]))

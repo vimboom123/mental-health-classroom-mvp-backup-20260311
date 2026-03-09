@@ -9,6 +9,14 @@ STATE_DIR = os.path.join(BASE_DIR, "state")
 TASKS_FILE = os.path.join(STATE_DIR, "tasks.json")
 
 ACTIVE_STATUSES = {"queued", "in_progress", "waiting_reviewer"}
+RESOURCE_BUDGETS = {
+    "codex": 1,
+    "claude-code": 2,
+    "gemini": 2,
+    "oracle": 2,
+    "qwen": 2,
+    "main": 3,
+}
 
 
 def now_iso():
@@ -41,8 +49,24 @@ def score(task):
     return priority + bonus
 
 
+def fits_budget(task, usage):
+    active = task.get("active_roles") or []
+    for role in active:
+        agent = role.get("agent")
+        budget = RESOURCE_BUDGETS.get(agent, 1)
+        if usage.get(agent, 0) >= budget:
+            return False, agent
+    return True, None
+
+
+def reserve(task, usage):
+    for role in task.get("active_roles") or []:
+        agent = role.get("agent")
+        usage[agent] = usage.get(agent, 0) + 1
+
+
 def main():
-    parser = argparse.ArgumentParser(description="simple scheduler for studio orchestrator")
+    parser = argparse.ArgumentParser(description="resource-aware scheduler for studio orchestrator")
     parser.add_argument("--max-active", type=int, default=3)
     args = parser.parse_args()
 
@@ -50,7 +74,22 @@ def main():
     tasks = data.get("tasks", [])
     active = [t for t in tasks if t.get("status") in ACTIVE_STATUSES and t.get("status") != "waiting_user"]
     ranked = sorted(active, key=score, reverse=True)
-    allowed_ids = {t["id"] for t in ranked[:args.max_active]}
+
+    selected = []
+    usage = {}
+    skipped = []
+    for task in ranked:
+        if len(selected) >= args.max_active:
+            skipped.append({"id": task["id"], "reason": "max_active_reached"})
+            continue
+        ok, conflict_agent = fits_budget(task, usage)
+        if not ok:
+            skipped.append({"id": task["id"], "reason": f"resource_conflict:{conflict_agent}"})
+            continue
+        selected.append(task)
+        reserve(task, usage)
+
+    allowed_ids = {t["id"] for t in selected}
     ts = now_iso()
 
     for task in tasks:
@@ -64,8 +103,10 @@ def main():
     print(json.dumps({
         "max_active": args.max_active,
         "selected": [
-            {"id": t["id"], "title": t["title"], "score": score(t)} for t in ranked[:args.max_active]
-        ]
+            {"id": t["id"], "title": t["title"], "score": score(t), "active_agents": [r.get("agent") for r in (t.get("active_roles") or [])]} for t in selected
+        ],
+        "skipped": skipped,
+        "resource_usage": usage,
     }, ensure_ascii=False, indent=2))
 
 
