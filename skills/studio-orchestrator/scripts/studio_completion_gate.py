@@ -27,11 +27,13 @@ def gate(task):
     artifacts = task.get("artifacts") or []
     logs = "\n".join(x.get("message", "") for x in task.get("logs", []))
     dispatch = task.get("dispatch_history") or task.get("dispatch_plan") or []
-    completion = task.get("completion_evidence")
+    completion = task.get("completion_evidence") or {}
 
     checks = []
     checks.append({"name": "phase_is_report", "ok": phase == "report", "reason": "current phase is not report" if phase != "report" else ""})
     checks.append({"name": "completion_evidence_present", "ok": bool(completion), "reason": "missing substantive completion evidence" if not completion else ""})
+    checks.append({"name": "artifact_validated", "ok": bool(completion.get('artifact_validated')), "reason": "artifact not explicitly validated" if not completion.get('artifact_validated') else ""})
+    checks.append({"name": "main_acceptance", "ok": bool(completion.get('main_acceptance')), "reason": "main acceptance not marked" if not completion.get('main_acceptance') else ""})
 
     if task_type == "doc":
         has_artifact = any(str(x).endswith(".md") for x in artifacts)
@@ -40,6 +42,7 @@ def gate(task):
         checks.append({"name": "final_check_seen", "ok": has_final_check, "reason": "no final_check evidence in logs" if not has_final_check else ""})
         review_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") in {"review", "second-opinion", "cn-review"})
         checks.append({"name": "review_done", "ok": review_done, "reason": "no review-like dispatch done" if not review_done else ""})
+        checks.append({"name": "review_merged", "ok": bool(completion.get('review_merged')), "reason": "review merge not explicitly marked" if not completion.get('review_merged') else ""})
         orchestration_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") == "orchestration")
         checks.append({"name": "orchestration_done", "ok": orchestration_done, "reason": "main-agent orchestration not done" if not orchestration_done else ""})
         final_report_evidence = ("最终汇报" in logs) or ("final report" in logs.lower()) or ("输出变更摘要" in logs)

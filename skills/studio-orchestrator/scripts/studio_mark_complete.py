@@ -37,6 +37,9 @@ def main():
     parser.add_argument('task_id')
     parser.add_argument('--kind', required=True, choices=['doc', 'code', 'engineering', 'general'])
     parser.add_argument('--summary', required=True)
+    parser.add_argument('--review-merged', action='store_true')
+    parser.add_argument('--artifact-validated', action='store_true')
+    parser.add_argument('--main-acceptance', action='store_true')
     args = parser.parse_args()
 
     data = load_tasks()
@@ -46,6 +49,9 @@ def main():
 
     task['completion_evidence'] = {
         'kind': args.kind,
+        'review_merged': bool(args.review_merged),
+        'artifact_validated': bool(args.artifact_validated),
+        'main_acceptance': bool(args.main_acceptance),
         'summary': args.summary,
         'marked_at': now_iso(),
         'marked_by': 'main-agent',
