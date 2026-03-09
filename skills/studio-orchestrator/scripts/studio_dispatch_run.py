@@ -25,6 +25,12 @@ def load_tasks():
         return json.load(f)
 
 
+def save_tasks(data):
+    with open(TASKS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
 def find_task(data, task_id):
     for task in data.get("tasks", []):
         if task.get("id") == task_id:
@@ -33,7 +39,7 @@ def find_task(data, task_id):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="minimal dispatch runner for studio tasks")
+    parser = argparse.ArgumentParser(description="run one dispatch item and collect result when possible")
     parser.add_argument("task_id")
     args = parser.parse_args()
 
@@ -42,16 +48,18 @@ def main():
     if not task:
         raise SystemExit(f"task not found: {args.task_id}")
 
+    # 如果已经有 running 项，优先 collect，不再重复 queue-next
+    running_item = next((item for item in (task.get("dispatch_plan") or []) if item.get("status") == "running"), None)
+    if running_item and running_item.get("output_path"):
+        subprocess.run([sys.executable, COLLECT_PY, args.task_id, running_item['id'], running_item['output_path']], check=True)
+        print(json.dumps({"task_id": args.task_id, "collected": running_item['id']}, ensure_ascii=False, indent=2))
+        return
+
     subprocess.run([sys.executable, QUEUE_PY, "queue-next", args.task_id], check=True, capture_output=True, text=True)
     data = load_tasks()
     task = find_task(data, args.task_id)
 
-    current = None
-    for item in task.get("dispatch_plan") or []:
-        if item.get("status") == "queued":
-            current = item
-            break
-
+    current = next((item for item in (task.get("dispatch_plan") or []) if item.get("status") == "queued"), None)
     if not current:
         print(json.dumps({"task_id": args.task_id, "ran": None}, ensure_ascii=False, indent=2))
         return
@@ -88,9 +96,13 @@ def main():
     data = load_tasks()
     task = find_task(data, args.task_id)
     task.setdefault("dispatch_runs", []).append(execution_record)
-    with open(TASKS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+    for item in task.get("dispatch_plan") or []:
+        if item.get("id") == current["id"] and real_payload.get('output_path'):
+            item['output_path'] = real_payload['output_path']
+    for item in task.get("dispatch_history") or []:
+        if item.get("id") == current["id"] and real_payload.get('output_path'):
+            item['output_path'] = real_payload['output_path']
+    save_tasks(data)
 
     if real_payload.get('supported') and real_payload.get('output_path'):
         subprocess.run([sys.executable, COLLECT_PY, args.task_id, current['id'], real_payload['output_path']], check=True)

@@ -290,6 +290,15 @@ def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
             refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
             safety += 1
 
+        # 自动执行 dispatch：只要有 planned/running 项，就触发 dispatch runner
+        dispatch_states = [x.get('status') for x in (refreshed.get('dispatch_plan') or [])]
+        if any(s in {'planned', 'queued', 'running'} for s in dispatch_states):
+            dispatch_run_py = os.path.join(BASE_DIR, 'scripts', 'studio_dispatch_run.py')
+            dispatch_res = call_py(dispatch_run_py, task_id, check=False)
+            side_effects.append({"task_id": task_id, "dispatch_run": {"code": dispatch_res.returncode, "stdout": dispatch_res.stdout.strip(), "stderr": dispatch_res.stderr.strip()}})
+            store = load_json(TASKS_FILE)
+            refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
+
         stall_res = call_py(STALL_CHECK_PY, task_id, "--stall-seconds", "180", check=False)
         if stall_res.returncode == 0:
             stall_payload = json.loads(stall_res.stdout or '{}')
