@@ -47,6 +47,12 @@ curl -s "https://api.open-meteo.com/v1/forecast?latitude=30.29365&longitude=120.
 - Preferred inline form: `MEDIA:~/.openclaw/workspace/outbox/file.png` or the exact absolute `/Users/.../.openclaw/workspace/...` path.
 - If a tool already printed a valid `MEDIA:` line or absolute file path, reuse it verbatim.
 
+## Notion Project Snapshot Rules (critical)
+
+- Preferred local helper for studio project base state: `scripts/notion_project_snapshot.sh <project-name>`.
+- Current studio projects data source id: `478ee9d7-d1db-4dc7-85d8-7663db95d6ca` (`工作室项目总表`).
+- Use this helper before progress reports that need Notion project base state.
+
 ## X Trends Runtime Rules (critical)
 
 - Preferred X trends source: `scripts/x_trends_apify.sh` with `APIFY_TOKEN` set.
