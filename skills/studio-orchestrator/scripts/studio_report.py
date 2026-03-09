@@ -52,6 +52,9 @@ def render(task):
     if plan:
         summary = "；".join(f"{x['agent']}={x['responsibility']}" for x in plan[:4])
         bits.append(f"分工：{summary}")
+    active = task.get("active_roles") or []
+    if active:
+        bits.append("当前活跃：" + "；".join(f"{x['agent']}({x['role']})" for x in active))
     artifacts = task.get("artifacts") or []
     if artifacts:
         bits.append("产物：" + ", ".join(artifacts[:3]))

@@ -50,7 +50,9 @@ def main():
     task_id = subprocess.check_output(cmd, text=True).strip()
     print(f"TASK_ID={task_id}")
     roles_py = os.path.join(BASE_DIR, "scripts", "studio_roles.py")
+    active_roles_py = os.path.join(BASE_DIR, "scripts", "studio_active_roles.py")
     subprocess.run([sys.executable, roles_py, task_id], check=True)
+    subprocess.run([sys.executable, active_roles_py, task_id], check=True)
     subprocess.run([sys.executable, RUNNER_PY, "tick", "--verbose"], check=True)
 
 

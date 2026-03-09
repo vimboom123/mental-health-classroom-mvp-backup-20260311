@@ -56,6 +56,9 @@ def render(task):
     plan = task.get("agent_plan") or []
     if plan:
         parts.append("分工：" + "；".join(f"{x['agent']}={x['responsibility']}" for x in plan[:3]))
+    active = task.get("active_roles") or []
+    if active:
+        parts.append("当前活跃：" + "；".join(f"{x['agent']}({x['role']})" for x in active))
     parts.append(f"下一步：{task.get('next') or '-'}")
     return "\n".join(parts)
 

@@ -40,6 +40,10 @@
         {
           "time": "2026-03-09T15:36:47+08:00",
           "message": "roles assigned for task type engineering"
+        },
+        {
+          "time": "2026-03-09T15:40:10+08:00",
+          "message": "active roles refreshed for phase report"
         }
       ],
       "priority": 90,
@@ -91,6 +95,13 @@
           "role": "cn-reviewer",
           "agent": "qwen",
           "responsibility": "中文语境判断与中文汇总"
+        }
+      ],
+      "active_roles": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 调度 / 结果整合 / 最终汇报"
         }
       ]
     },
