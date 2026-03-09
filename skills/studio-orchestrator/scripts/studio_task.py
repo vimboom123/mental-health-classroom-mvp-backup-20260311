@@ -65,6 +65,11 @@ def cmd_create(args):
         "next": args.next_step,
         "owner": args.owner,
         "artifacts": args.artifact or [],
+        "watched_files": args.watch_file or [],
+        "notify": {
+            "channel": args.notify_channel,
+            "target": args.notify_target,
+        } if args.notify_target else None,
         "blocker": args.blocker,
         "created_at": ts,
         "updated_at": ts,
@@ -162,6 +167,9 @@ def build_parser():
     c.add_argument("--next", dest="next_step", default="")
     c.add_argument("--owner", default="main-agent")
     c.add_argument("--artifact", action="append")
+    c.add_argument("--watch-file", action="append")
+    c.add_argument("--notify-channel", default="telegram")
+    c.add_argument("--notify-target")
     c.add_argument("--blocker")
     c.add_argument("--log")
     c.set_defaults(func=cmd_create)

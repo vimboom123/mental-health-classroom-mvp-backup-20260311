@@ -14,6 +14,9 @@ def main():
     parser.add_argument("title")
     parser.add_argument("type", choices=["doc", "code", "engineering", "general"])
     parser.add_argument("goal")
+    parser.add_argument("--watch-file", action="append")
+    parser.add_argument("--notify-target")
+    parser.add_argument("--notify-channel", default="telegram")
     args = parser.parse_args()
 
     cmd = [
@@ -37,6 +40,10 @@ def main():
         "--log",
         "studio_start: task created and handed to runner",
     ]
+    for path in args.watch_file or []:
+        cmd.extend(["--watch-file", path])
+    if args.notify_target:
+        cmd.extend(["--notify-target", args.notify_target, "--notify-channel", args.notify_channel])
     task_id = subprocess.check_output(cmd, text=True).strip()
     print(f"TASK_ID={task_id}")
     subprocess.run([sys.executable, RUNNER_PY, "tick", "--verbose"], check=True)

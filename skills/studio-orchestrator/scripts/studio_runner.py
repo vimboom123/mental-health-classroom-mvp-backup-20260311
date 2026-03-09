@@ -11,6 +11,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_DIR = os.path.join(BASE_DIR, "state")
 TASKS_FILE = os.path.join(STATE_DIR, "tasks.json")
 RUNNER_STATE_FILE = os.path.join(STATE_DIR, "runner_state.json")
+WATCH_PY = os.path.join(BASE_DIR, "scripts", "studio_watch.py")
+DECIDE_PY = os.path.join(BASE_DIR, "scripts", "studio_decide.py")
+NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_notify.py")
 
 
 def now_iso():
@@ -38,68 +41,150 @@ def save_json(path, data):
         f.write("\n")
 
 
-def call_task_cli(*args):
-    script = os.path.join(BASE_DIR, "scripts", "studio_task.py")
+def call_py(script, *args, check=True):
     cmd = [sys.executable, script, *args]
-    return subprocess.run(cmd, check=True, capture_output=True, text=True)
+    return subprocess.run(cmd, check=check, capture_output=True, text=True)
 
 
-def tick_once(verbose=False):
+def ingest_watched_files(task):
+    watched = task.get("watched_files") or []
+    task_id = task.get("id")
+    out = []
+    for path in watched:
+        if not os.path.exists(path):
+            continue
+        res = call_py(
+            WATCH_PY,
+            "ingest",
+            task_id,
+            path,
+            "--on-done-phase",
+            infer_done_phase(task),
+            "--on-done-next",
+            infer_done_next(task),
+            check=False,
+        )
+        out.append({"path": path, "code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()})
+    return out
+
+
+def maybe_decide(task):
+    res = call_py(DECIDE_PY, task.get("id"), check=False)
+    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
+
+
+def maybe_notify(task, min_interval):
+    notify = task.get("notify") or {}
+    target = notify.get("target")
+    channel = notify.get("channel") or "telegram"
+    if not target:
+        return None
+    res = call_py(NOTIFY_PY, "--task-id", task.get("id"), "--target", str(target), "--channel", channel, "--min-interval", str(min_interval), check=False)
+    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
+
+
+def tick_once(verbose=False, notify_min_interval=1800):
     ensure_store()
-    store = load_json(TASKS_FILE)
     runner = load_json(RUNNER_STATE_FILE)
     changed = []
+    side_effects = []
     ts = now_iso()
 
+    # refresh after every mutation because watch/decide may update file on disk
+    store = load_json(TASKS_FILE)
     for task in store.get("tasks", []):
+        task_id = task.get("id")
         status = task.get("status")
         phase = task.get("phase")
-        task_id = task.get("id")
         task_type = task.get("type")
 
         if status in {"done", "cancelled", "waiting_user", "blocked"}:
+            notify_res = maybe_notify(task, notify_min_interval)
+            if notify_res:
+                side_effects.append({"task_id": task_id, "notify": notify_res})
+            continue
+
+        watch_res = ingest_watched_files(task)
+        if watch_res:
+            side_effects.append({"task_id": task_id, "watch": watch_res})
+
+        decide_res = maybe_decide(task)
+        if decide_res:
+            side_effects.append({"task_id": task_id, "decide": decide_res})
+
+        store = load_json(TASKS_FILE)
+        refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), task)
+        status = refreshed.get("status")
+        phase = refreshed.get("phase")
+
+        if status in {"done", "cancelled", "waiting_user", "blocked"}:
+            notify_res = maybe_notify(refreshed, notify_min_interval)
+            if notify_res:
+                side_effects.append({"task_id": task_id, "notify": notify_res})
             continue
 
         recommendation = recommend(task_type, phase, status)
-        if not recommendation:
-            continue
+        if recommendation:
+            new_phase = recommendation.get("phase")
+            new_status = recommendation.get("status")
+            next_step = recommendation.get("next")
+            log_msg = recommendation.get("log")
+            if not (new_phase == phase and new_status == status and next_step == refreshed.get("next")):
+                call_py(
+                    os.path.join(BASE_DIR, "scripts", "studio_task.py"),
+                    "update",
+                    task_id,
+                    "--status", new_status,
+                    "--phase", new_phase,
+                    "--next", next_step,
+                    "--log", log_msg,
+                )
+                changed.append({
+                    "task_id": task_id,
+                    "title": refreshed.get("title"),
+                    "status": new_status,
+                    "phase": new_phase,
+                    "next": next_step,
+                })
+                store = load_json(TASKS_FILE)
+                refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
 
-        new_phase = recommendation.get("phase")
-        new_status = recommendation.get("status")
-        next_step = recommendation.get("next")
-        log_msg = recommendation.get("log")
-
-        if new_phase == phase and new_status == status and next_step == task.get("next"):
-            continue
-
-        call_task_cli(
-            "update",
-            task_id,
-            "--status",
-            new_status,
-            "--phase",
-            new_phase,
-            "--next",
-            next_step,
-            "--log",
-            log_msg,
-        )
-        changed.append({
-            "task_id": task_id,
-            "title": task.get("title"),
-            "status": new_status,
-            "phase": new_phase,
-            "next": next_step,
-        })
+        notify_res = maybe_notify(refreshed, notify_min_interval)
+        if notify_res:
+            side_effects.append({"task_id": task_id, "notify": notify_res})
 
     runner["last_tick"] = ts
     runner["ticks"] = int(runner.get("ticks", 0)) + 1
     save_json(RUNNER_STATE_FILE, runner)
 
+    payload = {"time": ts, "changed": changed, "side_effects": side_effects, "ticks": runner["ticks"]}
     if verbose:
-        print(json.dumps({"time": ts, "changed": changed, "ticks": runner["ticks"]}, ensure_ascii=False, indent=2))
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print(json.dumps(changed, ensure_ascii=False))
+
+
+def infer_done_phase(task):
+    task_type = task.get("type")
+    phase = task.get("phase")
+    if task_type == "doc" and phase == "review_collect":
+        return "review_merge"
+    if task_type == "code" and phase in {"implement", "review"}:
+        return "test"
+    if task_type == "engineering" and phase in {"investigate", "execute"}:
+        return "verify"
+    return phase or "execute"
+
+
+def infer_done_next(task):
+    task_type = task.get("type")
+    if task_type == "doc":
+        return "开始并单 reviewer 意见"
+    if task_type == "code":
+        return "开始测试和回归修正"
+    if task_type == "engineering":
+        return "开始验证执行结果"
+    return "根据新结果继续推进"
 
 
 def recommend(task_type, phase, status):
@@ -137,18 +222,13 @@ def recommend(task_type, phase, status):
     if phase not in flow:
         return None
     new_phase, new_status, next_step, log_msg = flow[phase]
-    return {
-        "phase": new_phase,
-        "status": new_status,
-        "next": next_step,
-        "log": log_msg,
-    }
+    return {"phase": new_phase, "status": new_status, "next": next_step, "log": log_msg}
 
 
-def daemon_loop(interval, max_ticks, verbose=False):
+def daemon_loop(interval, max_ticks, verbose=False, notify_min_interval=1800):
     ticks = 0
     while True:
-        tick_once(verbose=verbose)
+        tick_once(verbose=verbose, notify_min_interval=notify_min_interval)
         ticks += 1
         if max_ticks and ticks >= max_ticks:
             break
@@ -161,17 +241,19 @@ def main():
 
     tick = sub.add_parser("tick")
     tick.add_argument("--verbose", action="store_true")
+    tick.add_argument("--notify-min-interval", type=int, default=1800)
 
     daemon = sub.add_parser("daemon")
     daemon.add_argument("--interval", type=int, default=60)
     daemon.add_argument("--max-ticks", type=int, default=0)
     daemon.add_argument("--verbose", action="store_true")
+    daemon.add_argument("--notify-min-interval", type=int, default=1800)
 
     args = parser.parse_args()
     if args.command == "tick":
-        tick_once(verbose=args.verbose)
+        tick_once(verbose=args.verbose, notify_min_interval=args.notify_min_interval)
     else:
-        daemon_loop(args.interval, args.max_ticks, verbose=args.verbose)
+        daemon_loop(args.interval, args.max_ticks, verbose=args.verbose, notify_min_interval=args.notify_min_interval)
 
 
 if __name__ == "__main__":

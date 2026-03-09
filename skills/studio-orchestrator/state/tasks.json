@@ -41,13 +41,13 @@
       "type": "doc",
       "goal": "验证统一入口 + watch + report",
       "status": "in_progress",
-      "phase": "revise",
-      "next": "根据修改清单持续改正文",
+      "phase": "final_check",
+      "next": "做最终检查并准备汇报",
       "owner": "main-agent",
       "artifacts": [],
       "blocker": null,
       "created_at": "2026-03-09T15:01:38+08:00",
-      "updated_at": "2026-03-09T15:09:13+08:00",
+      "updated_at": "2026-03-09T15:16:11+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:01:38+08:00",
@@ -64,6 +64,14 @@
         {
           "time": "2026-03-09T15:09:13+08:00",
           "message": "runner: doc review_merge -> revise"
+        },
+        {
+          "time": "2026-03-09T15:16:11+08:00",
+          "message": "runner: doc revise -> polish"
+        },
+        {
+          "time": "2026-03-09T15:16:11+08:00",
+          "message": "runner: doc polish -> final_check"
         }
       ],
       "watch": [
@@ -79,14 +87,14 @@
       "title": "Process watch demo",
       "type": "doc",
       "goal": "验证 process/session 输出接管",
-      "status": "waiting_reviewer",
-      "phase": "review_collect",
-      "next": "等待后台 session 输出",
+      "status": "in_progress",
+      "phase": "revise",
+      "next": "根据修改清单持续改正文",
       "owner": "main-agent",
       "artifacts": [],
       "blocker": null,
       "created_at": "2026-03-09T15:09:13+08:00",
-      "updated_at": "2026-03-09T15:09:19+08:00",
+      "updated_at": "2026-03-09T15:16:11+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:09:13+08:00",
@@ -103,6 +111,14 @@
         {
           "time": "2026-03-09T15:09:19+08:00",
           "message": "watch ingest: process-watch-demo.log => neutral"
+        },
+        {
+          "time": "2026-03-09T15:16:11+08:00",
+          "message": "runner: doc review_collect -> review_merge"
+        },
+        {
+          "time": "2026-03-09T15:16:11+08:00",
+          "message": "runner: doc review_merge -> revise"
         }
       ],
       "watch": [
@@ -110,6 +126,62 @@
           "time": "2026-03-09T15:09:19+08:00",
           "path": "/tmp/process-watch-demo.log",
           "classification": "neutral"
+        }
+      ]
+    },
+    {
+      "id": "9d8dec78",
+      "title": "Auto loop demo",
+      "type": "doc",
+      "goal": "验证 runner 串 watch/decide/notify",
+      "status": "in_progress",
+      "phase": "polish",
+      "next": "收尾润色并统一口径",
+      "owner": "main-agent",
+      "artifacts": [],
+      "watched_files": [
+        "/tmp/studio_auto_watch.txt"
+      ],
+      "notify": null,
+      "blocker": null,
+      "created_at": "2026-03-09T15:16:11+08:00",
+      "updated_at": "2026-03-09T15:16:12+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T15:16:11+08:00",
+          "message": "studio_start: task created and handed to runner"
+        },
+        {
+          "time": "2026-03-09T15:16:11+08:00",
+          "message": "watch ingest: studio_auto_watch.txt => done_signal"
+        },
+        {
+          "time": "2026-03-09T15:16:11+08:00",
+          "message": "runner: doc intake -> review_collect"
+        },
+        {
+          "time": "2026-03-09T15:16:12+08:00",
+          "message": "watch ingest: studio_auto_watch.txt => done_signal"
+        },
+        {
+          "time": "2026-03-09T15:16:12+08:00",
+          "message": "decide: done-signal found in recent logs"
+        },
+        {
+          "time": "2026-03-09T15:16:12+08:00",
+          "message": "runner: doc revise -> polish"
+        }
+      ],
+      "watch": [
+        {
+          "time": "2026-03-09T15:16:11+08:00",
+          "path": "/tmp/studio_auto_watch.txt",
+          "classification": "done_signal"
+        },
+        {
+          "time": "2026-03-09T15:16:12+08:00",
+          "path": "/tmp/studio_auto_watch.txt",
+          "classification": "done_signal"
         }
       ]
     }

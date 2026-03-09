@@ -94,6 +94,14 @@ python3 skills/studio-orchestrator/scripts/studio_runner.py daemon --interval 60
 python3 skills/studio-orchestrator/scripts/studio_start.py "Manuscript revision" doc "合并 reviewer 意见并持续改稿"
 ```
 
+带 watch 文件和主动汇报目标启动：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_start.py "Manuscript revision" doc "合并 reviewer 意见并持续改稿" \
+  --watch-file /tmp/reviewer_output.txt \
+  --notify-target 8783735951 --notify-channel telegram
+```
+
 读取外部结果并映射任务状态：
 
 ```bash
@@ -176,14 +184,15 @@ python3 skills/studio-orchestrator/scripts/studio_task.py update <task_id> \
 
 ## 备注
 
-这是第一版骨架 + 最小 runner。它先解决三件事：
-- 任务必须被登记
-- 任务状态可追踪
-- runner 可以把任务按默认阶段持续往下推
+这是第一版可运行 orchestrator。它现在已经能做这些事：
+- 任务登记与状态追踪
+- runner 持续 tick
+- watch 文件结果回流
+- decide 按真实日志信号修正状态
+- notify 把 report 发到消息层
 
 后续还要继续接：
-- 自动轮询子进程/后台 session
-- 真正把主动汇报接到消息发送层
+- 自动轮询真实 OpenClaw 子进程/后台 session
 - reviewer / agent dispatch 适配器
-- 按真实结果而不是仅按阶段模板推进
 - 多任务优先级/资源冲突仲裁
+- 更细的阶段模板与任务类型插件化
