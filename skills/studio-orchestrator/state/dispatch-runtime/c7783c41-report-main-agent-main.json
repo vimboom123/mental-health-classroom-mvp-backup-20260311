@@ -1,0 +1,11 @@
+{
+  "dispatch_id": "c7783c41-report-main-agent-main",
+  "task_id": "c7783c41",
+  "launched_at": "2026-03-09T16:44:54+08:00",
+  "returncode": 0,
+  "payload": {
+    "supported": false,
+    "agent": "main"
+  },
+  "stderr": ""
+}

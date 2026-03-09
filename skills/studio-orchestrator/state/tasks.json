@@ -837,6 +837,14 @@
         {
           "time": "2026-03-09T16:38:31+08:00",
           "message": "dispatch collect: c7783c41-report-main-agent-main => running"
+        },
+        {
+          "time": "2026-03-09T16:44:54+08:00",
+          "message": "dispatch queued: c7783c41-report-main-agent-main"
+        },
+        {
+          "time": "2026-03-09T16:44:54+08:00",
+          "message": "dispatch running: c7783c41-report-main-agent-main"
         }
       ],
       "agent_plan": [
@@ -889,22 +897,21 @@
           "phase": "report",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
           "status": "running",
-          "updated_at": null,
-          "note": null,
-          "output_path": "/tmp/nonexistent-wrapper-output.txt"
+          "updated_at": "2026-03-09T16:44:54+08:00",
+          "runtime_meta": "/Volumes/Lexar/OpenClawStore/state/workspace/skills/studio-orchestrator/state/dispatch-runtime/c7783c41-report-main-agent-main.json"
         }
       ],
       "scheduler": {
         "eligible": true,
         "score": 70,
-        "lastScheduledAt": "2026-03-09T16:42:34+08:00"
+        "lastScheduledAt": "2026-03-09T16:45:05+08:00"
       },
       "runtime": {
         "mode": "background-daemon",
         "session_id": "glow-tidepool",
         "started_by": "main-agent"
       },
-      "last_report_ts": 1773045754.713892,
+      "last_report_ts": 1773045906.315102,
       "dispatch_history": [
         {
           "id": "c7783c41-step-1",
@@ -948,9 +955,8 @@
           "phase": "report",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
           "status": "running",
-          "updated_at": null,
-          "note": null,
-          "output_path": "/tmp/nonexistent-wrapper-output.txt"
+          "updated_at": "2026-03-09T16:44:54+08:00",
+          "note": null
         }
       ]
     }
