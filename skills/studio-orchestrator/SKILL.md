@@ -110,10 +110,10 @@ python3 skills/studio-orchestrator/scripts/studio_watch.py ingest <task_id> /pat
   --on-done-next "开始并单 reviewer 意见"
 ```
 
-读取后台 session / process 输出并映射任务状态：
+读取后台 session / process 导出的日志并映射任务状态：
 
 ```bash
-python3 skills/studio-orchestrator/scripts/studio_process_watch.py <task_id> <session_id> \
+python3 skills/studio-orchestrator/scripts/studio_process_watch.py <task_id> --log-file /tmp/reviewer.log --source-key reviewer-1 \
   --on-done-phase review_merge \
   --on-done-next "开始并单 reviewer 意见"
 ```

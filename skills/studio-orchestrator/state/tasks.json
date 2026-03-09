@@ -225,8 +225,8 @@
       "type": "doc",
       "goal": "验证同一 watch 结果不会重复 ingest",
       "status": "in_progress",
-      "phase": "final_check",
-      "next": "做最终检查并准备汇报",
+      "phase": "report",
+      "next": "输出变更摘要与当前结论",
       "owner": "main-agent",
       "artifacts": [],
       "watched_files": [
@@ -235,7 +235,7 @@
       "notify": null,
       "blocker": null,
       "created_at": "2026-03-09T15:18:21+08:00",
-      "updated_at": "2026-03-09T15:18:24+08:00",
+      "updated_at": "2026-03-09T15:20:29+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:18:21+08:00",
@@ -260,6 +260,10 @@
         {
           "time": "2026-03-09T15:18:24+08:00",
           "message": "runner: doc polish -> final_check"
+        },
+        {
+          "time": "2026-03-09T15:20:29+08:00",
+          "message": "runner: doc final_check -> report"
         }
       ],
       "watch": [
@@ -268,6 +272,52 @@
           "path": "/tmp/studio_dedupe_watch.txt",
           "classification": "done_signal",
           "fingerprint": "e9a9f26798169da85364adfd86dddd537b3d9c7b22cd0d005fa8cfa84fa8e1a9"
+        }
+      ]
+    },
+    {
+      "id": "d2ccc241",
+      "title": "Real process demo",
+      "type": "engineering",
+      "goal": "验证 process watch offset/去重",
+      "status": "in_progress",
+      "phase": "verify",
+      "next": "开始验证后台 process 输出结果",
+      "owner": "main-agent",
+      "artifacts": [],
+      "watched_files": [],
+      "notify": null,
+      "blocker": null,
+      "created_at": "2026-03-09T15:20:32+08:00",
+      "updated_at": "2026-03-09T15:21:39+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T15:20:32+08:00",
+          "message": "studio_start: task created and handed to runner"
+        },
+        {
+          "time": "2026-03-09T15:20:33+08:00",
+          "message": "runner: engineering intake -> investigate"
+        },
+        {
+          "time": "2026-03-09T15:20:34+08:00",
+          "message": "runner: engineering investigate -> execute"
+        },
+        {
+          "time": "2026-03-09T15:21:39+08:00",
+          "message": "process watch: demo-session => done_signal"
+        }
+      ],
+      "process_offsets": {
+        "demo-session": 24
+      },
+      "process_watch": [
+        {
+          "time": "2026-03-09T15:21:39+08:00",
+          "source_key": "demo-session",
+          "classification": "done_signal",
+          "fingerprint": "68decc34d5416e6f0fe2a973e2adfda1811f54a719907aae7378d220251f65fc",
+          "offset": 24
         }
       ]
     }

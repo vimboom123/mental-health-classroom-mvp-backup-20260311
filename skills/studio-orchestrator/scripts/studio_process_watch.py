@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import os
-import subprocess
 import sys
 from datetime import datetime, timezone
 
@@ -50,30 +50,49 @@ def classify(text):
     return "neutral"
 
 
-def fetch_process_log(session_id, offset=0, limit=4000):
-    cmd = [
-        "openclaw",
-        "process",
-        "log",
-        session_id,
-        "--offset",
-        str(offset),
-        "--limit",
-        str(limit),
-    ]
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if res.returncode != 0:
-        raise SystemExit(res.stderr.strip() or res.stdout.strip() or "failed to fetch process log")
-    return res.stdout
+def fingerprint(text):
+    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
 
 
-def ingest(task, session_id, text, on_done_phase=None, on_done_next=None):
+def load_text(args, task):
+    key = args.source_key or args.session_id or "default"
+    offsets = task.setdefault("process_offsets", {})
+    if args.stdin:
+        text = sys.stdin.read()
+        next_offset = offsets.get(key, 0) + len(text)
+        return key, text, next_offset
+    if args.log_file:
+        with open(args.log_file, "r", encoding="utf-8", errors="ignore") as f:
+            text = f.read()
+        next_offset = len(text)
+        return key, text, next_offset
+    raise SystemExit("provide --log-file or --stdin")
+
+
+def already_ingested(task, source_key, fp):
+    if not fp:
+        return False
+    for item in reversed(task.get("process_watch", [])):
+        if item.get("source_key") == source_key and item.get("fingerprint") == fp:
+            return True
+    return False
+
+
+def ingest(task, source_key, text, next_offset, on_done_phase=None, on_done_next=None):
+    fp = fingerprint(text)
+    if already_ingested(task, source_key, fp):
+        return {"classification": "duplicate", "skipped": True, "fingerprint": fp, "next_offset": next_offset}
+
     cls = classify(text)
     ts = now_iso()
+    task.setdefault("process_offsets", {})
+    task["process_offsets"][source_key] = next_offset
     task.setdefault("process_watch", []).append({
         "time": ts,
-        "session_id": session_id,
+        "source_key": source_key,
         "classification": cls,
+        "fingerprint": fp,
+        "offset": next_offset,
     })
     if cls == "done_signal":
         task["status"] = "in_progress"
@@ -85,21 +104,22 @@ def ingest(task, session_id, text, on_done_phase=None, on_done_next=None):
         task["status"] = "waiting_reviewer"
     elif cls == "blocked":
         task["status"] = "blocked"
-        task["blocker"] = f"process watch detected issue in session {session_id}"
+        task["blocker"] = f"process watch detected issue in source {source_key}"
     task["updated_at"] = ts
     task.setdefault("logs", []).append({
         "time": ts,
-        "message": f"process watch: {session_id} => {cls}",
+        "message": f"process watch: {source_key} => {cls}",
     })
-    return cls
+    return {"classification": cls, "skipped": False, "fingerprint": fp, "next_offset": next_offset}
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ingest process/session log into studio task state")
+    parser = argparse.ArgumentParser(description="ingest process/session-like logs into studio task state")
     parser.add_argument("task_id")
-    parser.add_argument("session_id")
-    parser.add_argument("--offset", type=int, default=0)
-    parser.add_argument("--limit", type=int, default=4000)
+    parser.add_argument("session_id", nargs="?")
+    parser.add_argument("--log-file")
+    parser.add_argument("--stdin", action="store_true")
+    parser.add_argument("--source-key")
     parser.add_argument("--on-done-phase")
     parser.add_argument("--on-done-next")
     args = parser.parse_args()
@@ -109,10 +129,16 @@ def main():
     if not task:
         raise SystemExit(f"task not found: {args.task_id}")
 
-    text = fetch_process_log(args.session_id, offset=args.offset, limit=args.limit)
-    cls = ingest(task, args.session_id, text, args.on_done_phase, args.on_done_next)
+    source_key, text, next_offset = load_text(args, task)
+    result = ingest(task, source_key, text, next_offset, args.on_done_phase, args.on_done_next)
     save_tasks(data)
-    print(json.dumps({"classification": cls, "task_id": args.task_id, "session_id": args.session_id}, ensure_ascii=False, indent=2))
+    payload = {
+        "task_id": args.task_id,
+        "source_key": source_key,
+        "next_offset": next_offset,
+        **result,
+    }
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
