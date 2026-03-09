@@ -1000,9 +1000,7 @@
         "review_merged": true,
         "artifact_validated": true,
         "main_acceptance": true,
-        "summary": "已完成 reviewer 意见汇总、产物校验与主智能体验收",
-        "marked_at": "2026-03-09T16:59:20+08:00",
-        "marked_by": "main-agent"
+        "summary": ""
       }
     }
   ]
