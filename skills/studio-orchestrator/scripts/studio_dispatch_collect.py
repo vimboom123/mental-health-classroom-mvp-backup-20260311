@@ -57,6 +57,8 @@ def main():
             text = f.read()
 
     status = classify(text)
+    if not os.path.exists(args.output_path):
+        status = 'running'
     changed = None
     for coll in ['dispatch_plan', 'dispatch_history']:
         for item in task.get(coll, []) or []:

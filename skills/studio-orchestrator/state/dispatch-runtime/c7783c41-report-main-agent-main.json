@@ -5,7 +5,8 @@
   "returncode": 0,
   "payload": {
     "supported": false,
-    "agent": "main"
+    "agent": "main",
+    "output_path": "/Volumes/Lexar/OpenClawStore/state/workspace/tmp/studio-dispatch/main-fake-done.txt"
   },
   "stderr": ""
 }

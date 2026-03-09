@@ -712,9 +712,9 @@
       "title": "Paper revision - manuscript_final",
       "type": "doc",
       "goal": "继续推进 AI 采纳论文终稿改写并主动汇报",
-      "status": "in_progress",
-      "phase": "report",
-      "next": "等待 main-agent 完成最终汇报与验收闭环",
+      "status": "done",
+      "phase": "done",
+      "next": "论文改写任务完成",
       "owner": "main-agent",
       "artifacts": [
         "lexar/shit-template/manuscript_final.md"
@@ -727,16 +727,16 @@
       },
       "priority": 50,
       "progress": {
-        "percent": 90,
+        "percent": 100,
         "current": 8,
         "total": 8,
-        "status_text": "当前阶段：report",
+        "status_text": "当前阶段：done",
         "last_feedback_ts": 1773045511.799726,
         "last_feedback_percent": 90
       },
       "blocker": null,
       "created_at": "2026-03-09T15:53:41+08:00",
-      "updated_at": "2026-03-09T16:07:09+08:00",
+      "updated_at": "2026-03-09T16:47:58+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:53:41+08:00",
@@ -845,6 +845,26 @@
         {
           "time": "2026-03-09T16:44:54+08:00",
           "message": "dispatch running: c7783c41-report-main-agent-main"
+        },
+        {
+          "time": "2026-03-09T16:47:58+08:00",
+          "message": "dispatch collect: c7783c41-report-main-agent-main => done"
+        },
+        {
+          "time": "2026-03-09T16:47:58+08:00",
+          "message": "最终汇报：当前活跃派工已完成，进入完成判定"
+        },
+        {
+          "time": "2026-03-09T16:47:58+08:00",
+          "message": "runner: doc report -> done"
+        },
+        {
+          "time": "2026-03-09T16:47:58+08:00",
+          "message": "active roles refreshed for phase done"
+        },
+        {
+          "time": "2026-03-09T16:47:58+08:00",
+          "message": "dispatch plan refreshed"
         }
       ],
       "agent_plan": [
@@ -890,21 +910,21 @@
       ],
       "dispatch_plan": [
         {
-          "id": "c7783c41-report-main-agent-main",
+          "id": "c7783c41-done-main-agent-main",
           "agent": "main",
           "kind": "orchestration",
           "role": "main-agent",
-          "phase": "report",
+          "phase": "done",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
-          "status": "running",
-          "updated_at": "2026-03-09T16:44:54+08:00",
-          "runtime_meta": "/Volumes/Lexar/OpenClawStore/state/workspace/skills/studio-orchestrator/state/dispatch-runtime/c7783c41-report-main-agent-main.json"
+          "status": "planned",
+          "updated_at": null,
+          "note": null
         }
       ],
       "scheduler": {
         "eligible": true,
         "score": 70,
-        "lastScheduledAt": "2026-03-09T16:45:05+08:00"
+        "lastScheduledAt": "2026-03-09T16:47:57+08:00"
       },
       "runtime": {
         "mode": "background-daemon",
@@ -954,8 +974,20 @@
           "role": "main-agent",
           "phase": "report",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
-          "status": "running",
+          "status": "done",
           "updated_at": "2026-03-09T16:44:54+08:00",
+          "note": null,
+          "output_path": "/Volumes/Lexar/OpenClawStore/state/workspace/tmp/studio-dispatch/main-fake-done.txt"
+        },
+        {
+          "id": "c7783c41-done-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "done",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned",
+          "updated_at": null,
           "note": null
         }
       ]

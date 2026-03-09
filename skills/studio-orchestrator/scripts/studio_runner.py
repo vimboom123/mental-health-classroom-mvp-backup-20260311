@@ -316,11 +316,31 @@ def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
         store = load_json(TASKS_FILE)
         refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
 
+        # 若当前活跃派工全部 done，则自动补一条最终汇报证据，并允许后续进入 completion gate
+        active_dispatch = refreshed.get('dispatch_plan') or []
+        if active_dispatch and all(x.get('status') == 'done' for x in active_dispatch):
+            report_log = '最终汇报：当前活跃派工已完成，进入完成判定'
+            call_py(TASK_PY, 'log', task_id, report_log, check=False)
+            store = load_json(TASKS_FILE)
+            refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
+
         stall_res = call_py(STALL_CHECK_PY, task_id, "--stall-seconds", "180", check=False)
         if stall_res.returncode == 0:
             stall_payload = json.loads(stall_res.stdout or '{}')
             if stall_payload.get('stalled'):
                 side_effects.append({"task_id": task_id, "stalled": stall_payload})
+
+        # 若 report 阶段且 gate 已通过，补做一次 done 推进
+        if refreshed.get('phase') == 'report' and refreshed.get('status') == 'in_progress':
+            ok, gate_payload = completion_gate_ok(task_id)
+            if ok:
+                result = apply_recommendation(task_id, refreshed.get('type'), refreshed.get('phase'), refreshed.get('status'), refreshed.get('next'))
+                if result and not result.get('blocked_done'):
+                    changed.append(result)
+                    store = load_json(TASKS_FILE)
+                    refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
+            else:
+                side_effects.append({"task_id": task_id, "gate_wait": gate_payload})
 
         feedback_res = maybe_feedback_notify(refreshed)
         if feedback_res:
