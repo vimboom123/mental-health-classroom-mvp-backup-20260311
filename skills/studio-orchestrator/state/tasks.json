@@ -44,6 +44,18 @@
         {
           "time": "2026-03-09T15:40:10+08:00",
           "message": "active roles refreshed for phase report"
+        },
+        {
+          "time": "2026-03-09T15:52:18+08:00",
+          "message": "dispatch queued: f7d962a1-step-1"
+        },
+        {
+          "time": "2026-03-09T15:52:18+08:00",
+          "message": "dispatch running: f7d962a1-step-1"
+        },
+        {
+          "time": "2026-03-09T15:52:18+08:00",
+          "message": "dispatch done: f7d962a1-step-1"
         }
       ],
       "priority": 90,
@@ -113,11 +125,24 @@
       ],
       "dispatch_plan": [
         {
+          "id": "f7d962a1-step-1",
           "agent": "main",
           "kind": "orchestration",
           "role": "main-agent",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
-          "status": "planned"
+          "status": "done",
+          "updated_at": "2026-03-09T15:52:18+08:00",
+          "note": "placeholder dispatch completed"
+        }
+      ],
+      "dispatch_runs": [
+        {
+          "time": "2026-03-09T15:52:18+08:00",
+          "dispatch_id": "f7d962a1-step-1",
+          "agent": "main",
+          "kind": "orchestration",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "mode": "placeholder"
         }
       ]
     },

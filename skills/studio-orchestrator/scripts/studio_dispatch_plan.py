@@ -39,8 +39,9 @@ def find_task(data, task_id):
 
 def build_plan(task):
     items = []
-    for action in task.get("next_actions") or []:
+    for idx, action in enumerate(task.get("next_actions") or [], start=1):
         items.append({
+            "id": f"{task['id']}-step-{idx}",
             "agent": action.get("agent"),
             "kind": DISPATCH_KIND.get(action.get("agent"), "general"),
             "role": action.get("role"),

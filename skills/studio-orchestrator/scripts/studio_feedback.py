@@ -64,7 +64,7 @@ def render(task):
         parts.append("动作建议：" + "；".join(f"{x['agent']}→{x['action']}" for x in actions[:3]))
     dispatch = task.get("dispatch_plan") or []
     if dispatch:
-        parts.append("派工计划：" + "；".join(f"{x['agent']}[{x['kind']}]" for x in dispatch[:3]))
+        parts.append("派工计划：" + "；".join(f"{x['agent']}[{x['kind']}/{x['status']}]" for x in dispatch[:3]))
     parts.append(f"下一步：{task.get('next') or '-'}")
     return "\n".join(parts)
 

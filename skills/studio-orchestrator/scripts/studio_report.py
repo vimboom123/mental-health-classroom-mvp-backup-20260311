@@ -60,7 +60,7 @@ def render(task):
         bits.append("动作建议：" + "；".join(f"{x['agent']}→{x['action']}" for x in actions[:3]))
     dispatch = task.get("dispatch_plan") or []
     if dispatch:
-        bits.append("派工计划：" + "；".join(f"{x['agent']}[{x['kind']}]" for x in dispatch[:3]))
+        bits.append("派工计划：" + "；".join(f"{x['agent']}[{x['kind']}/{x['status']}]" for x in dispatch[:3]))
     artifacts = task.get("artifacts") or []
     if artifacts:
         bits.append("产物：" + ", ".join(artifacts[:3]))
