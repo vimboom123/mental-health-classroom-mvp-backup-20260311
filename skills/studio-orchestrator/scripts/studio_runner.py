@@ -14,6 +14,7 @@ RUNNER_STATE_FILE = os.path.join(STATE_DIR, "runner_state.json")
 WATCH_PY = os.path.join(BASE_DIR, "scripts", "studio_watch.py")
 PROCESS_WATCH_PY = os.path.join(BASE_DIR, "scripts", "studio_process_watch.py")
 DECIDE_PY = os.path.join(BASE_DIR, "scripts", "studio_decide.py")
+SCHEDULER_PY = os.path.join(BASE_DIR, "scripts", "studio_scheduler.py")
 NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_notify.py")
 FEEDBACK_NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_feedback_notify.py")
 
@@ -118,12 +119,25 @@ def maybe_feedback_notify(task, min_interval=600, min_progress_step=10):
     return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
 
 
-def tick_once(verbose=False, notify_min_interval=1800):
+def scheduled_ids(max_active=3):
+    res = call_py(SCHEDULER_PY, "--max-active", str(max_active), check=False)
+    if res.returncode != 0:
+        return None, {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
+    payload = json.loads(res.stdout or '{}')
+    ids = {item['id'] for item in payload.get('selected', [])}
+    return ids, payload
+
+
+def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
     ensure_store()
     runner = load_json(RUNNER_STATE_FILE)
     changed = []
     side_effects = []
     ts = now_iso()
+
+    allowed_ids, sched_payload = scheduled_ids(max_active=max_active)
+    if sched_payload:
+        side_effects.append({"scheduler": sched_payload})
 
     # refresh after every mutation because watch/decide may update file on disk
     store = load_json(TASKS_FILE)
@@ -132,6 +146,10 @@ def tick_once(verbose=False, notify_min_interval=1800):
         status = task.get("status")
         phase = task.get("phase")
         task_type = task.get("type")
+
+        if allowed_ids is not None and task_id not in allowed_ids and status in {"queued", "in_progress", "waiting_reviewer"}:
+            side_effects.append({"task_id": task_id, "skipped_by_scheduler": True})
+            continue
 
         if status in {"done", "cancelled", "waiting_user", "blocked"}:
             notify_res = maybe_notify(task, notify_min_interval)
@@ -169,6 +187,7 @@ def tick_once(verbose=False, notify_min_interval=1800):
             next_step = recommendation.get("next")
             log_msg = recommendation.get("log")
             if not (new_phase == phase and new_status == status and next_step == refreshed.get("next")):
+                progress = infer_progress(refreshed.get("type"), new_phase)
                 call_py(
                     os.path.join(BASE_DIR, "scripts", "studio_task.py"),
                     "update",
@@ -176,6 +195,10 @@ def tick_once(verbose=False, notify_min_interval=1800):
                     "--status", new_status,
                     "--phase", new_phase,
                     "--next", next_step,
+                    "--progress-percent", str(progress["percent"]),
+                    "--progress-current", str(progress["current"]),
+                    "--progress-total", str(progress["total"]),
+                    "--progress-status", progress["status_text"],
                     "--log", log_msg,
                 )
                 changed.append({
@@ -230,6 +253,29 @@ def infer_done_next(task):
     return "根据新结果继续推进"
 
 
+def infer_progress(task_type, phase):
+    phase_orders = {
+        "doc": ["intake", "review_collect", "review_merge", "revise", "polish", "final_check", "report"],
+        "code": ["intake", "plan", "implement", "review", "test", "fixup", "report"],
+        "engineering": ["intake", "investigate", "execute", "verify", "iterate", "report"],
+        "general": ["intake", "execute", "verify", "report"],
+    }
+    order = phase_orders.get(task_type, phase_orders["general"])
+    total = len(order)
+    try:
+        idx = order.index(phase)
+    except ValueError:
+        idx = 0
+    current = idx + 1
+    percent = int((current / total) * 100)
+    return {
+        "percent": percent,
+        "current": current,
+        "total": total,
+        "status_text": f"当前阶段：{phase}",
+    }
+
+
 def recommend(task_type, phase, status):
     flows = {
         "doc": {
@@ -268,10 +314,10 @@ def recommend(task_type, phase, status):
     return {"phase": new_phase, "status": new_status, "next": next_step, "log": log_msg}
 
 
-def daemon_loop(interval, max_ticks, verbose=False, notify_min_interval=1800):
+def daemon_loop(interval, max_ticks, verbose=False, notify_min_interval=1800, max_active=3):
     ticks = 0
     while True:
-        tick_once(verbose=verbose, notify_min_interval=notify_min_interval)
+        tick_once(verbose=verbose, notify_min_interval=notify_min_interval, max_active=max_active)
         ticks += 1
         if max_ticks and ticks >= max_ticks:
             break
@@ -285,18 +331,20 @@ def main():
     tick = sub.add_parser("tick")
     tick.add_argument("--verbose", action="store_true")
     tick.add_argument("--notify-min-interval", type=int, default=1800)
+    tick.add_argument("--max-active", type=int, default=3)
 
     daemon = sub.add_parser("daemon")
     daemon.add_argument("--interval", type=int, default=60)
     daemon.add_argument("--max-ticks", type=int, default=0)
     daemon.add_argument("--verbose", action="store_true")
     daemon.add_argument("--notify-min-interval", type=int, default=1800)
+    daemon.add_argument("--max-active", type=int, default=3)
 
     args = parser.parse_args()
     if args.command == "tick":
-        tick_once(verbose=args.verbose, notify_min_interval=args.notify_min_interval)
+        tick_once(verbose=args.verbose, notify_min_interval=args.notify_min_interval, max_active=args.max_active)
     else:
-        daemon_loop(args.interval, args.max_ticks, verbose=args.verbose, notify_min_interval=args.notify_min_interval)
+        daemon_loop(args.interval, args.max_ticks, verbose=args.verbose, notify_min_interval=args.notify_min_interval, max_active=args.max_active)
 
 
 if __name__ == "__main__":

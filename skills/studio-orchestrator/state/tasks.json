@@ -50,12 +50,13 @@
       "scheduler": {
         "eligible": true,
         "score": 110,
-        "lastScheduledAt": "2026-03-09T15:30:18+08:00"
+        "lastScheduledAt": "2026-03-09T15:33:23+08:00"
       },
       "notify": {
         "channel": "telegram",
         "target": "8783735951"
-      }
+      },
+      "last_report_ts": 1773041603.643896
     },
     {
       "id": "58729448",
@@ -110,7 +111,7 @@
       "scheduler": {
         "eligible": true,
         "score": 70,
-        "lastScheduledAt": "2026-03-09T15:30:18+08:00"
+        "lastScheduledAt": "2026-03-09T15:33:23+08:00"
       }
     },
     {
@@ -172,7 +173,7 @@
         }
       ],
       "scheduler": {
-        "eligible": true,
+        "eligible": false,
         "score": 70,
         "lastScheduledAt": "2026-03-09T15:30:18+08:00"
       }

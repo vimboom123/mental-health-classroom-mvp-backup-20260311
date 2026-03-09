@@ -190,13 +190,15 @@ python3 skills/studio-orchestrator/scripts/studio_task.py update <task_id> \
 
 这是第一版可运行 orchestrator。它现在已经能做这些事：
 - 任务登记与状态追踪
+- scheduler 选出本轮活跃任务
 - runner 持续 tick
-- watch 文件结果回流
+- watch 文件 / process 日志结果回流
 - decide 按真实日志信号修正状态
+- progress feedback 像 action feedback 一样阶段回报
 - notify 把 report 发到消息层
 
 后续还要继续接：
 - 自动轮询真实 OpenClaw 子进程/后台 session
 - reviewer / agent dispatch 适配器
-- 多任务优先级/资源冲突仲裁
 - 更细的阶段模板与任务类型插件化
+- 更强的资源冲突与依赖关系仲裁
