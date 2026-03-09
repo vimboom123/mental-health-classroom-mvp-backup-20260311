@@ -39,7 +39,7 @@
 - `scripts/studio_dispatch_run.py`：最小 dispatcher，推进 queued/running/done
 - `scripts/studio_completion_gate.py`：真实完成条件检查，未满足时禁止自动 done；所有任务类型都要求显式 `completion_evidence`，文档/代码/工程再叠加各自的产物与审查门槛
 - `scripts/studio_mark_complete.py`：由主智能体在确认“内容/代码/工程结果已真正闭环”后写入结构化完成证据（`review_merged` / `artifact_validated` / `main_acceptance` / `summary`）
-- `scripts/studio_completion_suggest.py`：从 dispatch/history/artifacts/logs 自动部分填充 completion_evidence 建议值；runner 在 report 阶段会自动调用，并把缺失 acceptance 条件反馈出来
+- `scripts/studio_completion_suggest.py`：从 dispatch/history/artifacts/logs 自动部分填充 completion_evidence 建议值；默认只自动建议 `review_merged` / `artifact_validated`，`main_acceptance` 仍需显式确认
 - `scripts/studio_sync_task_state.py`：修复 task 的 status / phase / progress 不一致
 - `scripts/studio_stall_check.py`：检测后台空转/停滞
 - `scripts/studio_migrate_dispatch_history.py`：把旧 `step-*` 派工记录标记为 legacy，便于稳定 id 迁移

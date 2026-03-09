@@ -35,12 +35,11 @@ def suggest(task):
 
     review_done = any(x.get('status') == 'done' for x in dispatch if x.get('kind') in {'review', 'second-opinion', 'cn-review'})
     artifact_validated = bool(artifacts)
-    main_acceptance = any(x.get('status') == 'done' for x in dispatch if x.get('kind') == 'orchestration') and ('最终汇报' in logs or 'final report' in logs.lower())
 
     completion.setdefault('kind', task.get('type') or 'general')
     completion['review_merged'] = bool(review_done)
     completion['artifact_validated'] = bool(artifact_validated)
-    completion['main_acceptance'] = bool(main_acceptance)
+    completion.setdefault('main_acceptance', False)
     completion.setdefault('summary', '')
     return completion
 

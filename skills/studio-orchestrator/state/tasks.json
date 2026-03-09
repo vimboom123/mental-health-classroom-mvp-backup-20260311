@@ -712,8 +712,8 @@
       "title": "Paper revision - manuscript_final",
       "type": "doc",
       "goal": "继续推进 AI 采纳论文终稿改写并主动汇报",
-      "status": "done",
-      "phase": "done",
+      "status": "in_progress",
+      "phase": "report",
       "next": "论文改写任务完成",
       "owner": "main-agent",
       "artifacts": [
@@ -1011,7 +1011,7 @@
         "kind": "doc",
         "review_merged": true,
         "artifact_validated": true,
-        "main_acceptance": true,
+        "main_acceptance": false,
         "summary": ""
       }
     }
