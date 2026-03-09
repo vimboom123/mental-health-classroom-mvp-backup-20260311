@@ -110,6 +110,15 @@
           "agent": "main",
           "action": "主智能体负责统筹、验收、汇报、必要时拍板升级"
         }
+      ],
+      "dispatch_plan": [
+        {
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned"
+        }
       ]
     },
     {
@@ -153,6 +162,14 @@
         {
           "time": "2026-03-09T15:18:22+08:00",
           "message": "runner: doc final_check -> report"
+        },
+        {
+          "time": "2026-03-09T15:49:12+08:00",
+          "message": "roles assigned for task type doc"
+        },
+        {
+          "time": "2026-03-09T15:49:12+08:00",
+          "message": "active roles refreshed for phase report"
         }
       ],
       "watch": [
@@ -166,7 +183,48 @@
         "eligible": true,
         "score": 70,
         "lastScheduledAt": "2026-03-09T15:44:56+08:00"
-      }
+      },
+      "agent_plan": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 验收 / 最终汇报 / 结构统筹"
+        },
+        {
+          "role": "writer",
+          "agent": "gemini",
+          "responsibility": "表达层、润色、可读性优化"
+        },
+        {
+          "role": "reviewer",
+          "agent": "claude-code",
+          "responsibility": "代码/文本审校、问题发现"
+        },
+        {
+          "role": "second-opinion",
+          "agent": "oracle",
+          "responsibility": "全局复盘与第二视角"
+        },
+        {
+          "role": "cn-reviewer",
+          "agent": "qwen",
+          "responsibility": "中文表达、本土语境、中文总结"
+        }
+      ],
+      "active_roles": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 验收 / 最终汇报 / 结构统筹"
+        }
+      ],
+      "next_actions": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "action": "主智能体负责统筹、验收、汇报、必要时拍板升级"
+        }
+      ]
     },
     {
       "id": "5e4608a9",

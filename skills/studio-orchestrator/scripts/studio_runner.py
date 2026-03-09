@@ -19,6 +19,7 @@ NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_notify.py")
 FEEDBACK_NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_feedback_notify.py")
 ACTIVE_ROLES_PY = os.path.join(BASE_DIR, "scripts", "studio_active_roles.py")
 NEXT_ACTIONS_PY = os.path.join(BASE_DIR, "scripts", "studio_next_actions.py")
+DISPATCH_PLAN_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_plan.py")
 
 
 def now_iso():
@@ -212,6 +213,7 @@ def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
                 })
                 call_py(ACTIVE_ROLES_PY, task_id, check=False)
                 call_py(NEXT_ACTIONS_PY, task_id, check=False)
+                call_py(DISPATCH_PLAN_PY, task_id, check=False)
                 store = load_json(TASKS_FILE)
                 refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
 

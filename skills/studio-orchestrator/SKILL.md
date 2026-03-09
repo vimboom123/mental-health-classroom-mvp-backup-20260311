@@ -33,6 +33,7 @@
 - `scripts/studio_roles.py`：给文档/代码/工程任务自动分配工作室 AI 分工
 - `scripts/studio_active_roles.py`：按当前 phase 切换当前活跃 AI
 - `scripts/studio_next_actions.py`：根据当前活跃 AI 生成下一动作建议
+- `scripts/studio_dispatch_plan.py`：把动作建议转成可执行派工计划
 - `scripts/studio_feedback.py`：像 ROS2 action feedback 一样输出阶段性进度
 - `scripts/studio_feedback_notify.py`：把阶段性进度主动发到消息层
 - `scripts/studio_report.py`：筛出应该主动汇报的任务

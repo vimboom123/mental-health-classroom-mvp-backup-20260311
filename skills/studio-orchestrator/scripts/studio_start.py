@@ -52,9 +52,11 @@ def main():
     roles_py = os.path.join(BASE_DIR, "scripts", "studio_roles.py")
     active_roles_py = os.path.join(BASE_DIR, "scripts", "studio_active_roles.py")
     next_actions_py = os.path.join(BASE_DIR, "scripts", "studio_next_actions.py")
+    dispatch_plan_py = os.path.join(BASE_DIR, "scripts", "studio_dispatch_plan.py")
     subprocess.run([sys.executable, roles_py, task_id], check=True)
     subprocess.run([sys.executable, active_roles_py, task_id], check=True)
     subprocess.run([sys.executable, next_actions_py, task_id], check=True)
+    subprocess.run([sys.executable, dispatch_plan_py, task_id], check=True)
     subprocess.run([sys.executable, RUNNER_PY, "tick", "--verbose"], check=True)
 
 
