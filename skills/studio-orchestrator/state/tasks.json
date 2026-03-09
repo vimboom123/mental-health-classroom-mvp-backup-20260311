@@ -905,7 +905,9 @@
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
           "status": "planned",
           "updated_at": "2026-03-09T16:05:06+08:00",
-          "note": "review completed"
+          "note": "review completed",
+          "legacy": true,
+          "phase": "legacy"
         },
         {
           "id": "c7783c41-step-2",
@@ -915,7 +917,9 @@
           "instruction": "交给 Oracle 做全局复盘和第二视角审阅",
           "status": "done",
           "updated_at": "2026-03-09T16:05:06+08:00",
-          "note": "oracle completed"
+          "note": "oracle completed",
+          "legacy": true,
+          "phase": "legacy"
         },
         {
           "id": "c7783c41-step-3",
@@ -923,7 +927,9 @@
           "kind": "orchestration",
           "role": "main-agent",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
-          "status": "planned"
+          "status": "planned",
+          "legacy": true,
+          "phase": "legacy"
         },
         {
           "id": "c7783c41-report-main-agent-main",

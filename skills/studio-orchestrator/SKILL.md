@@ -40,6 +40,7 @@
 - `scripts/studio_completion_gate.py`：真实完成条件检查，未满足时禁止自动 done（文档类默认要求 report 阶段 + final_check 证据 + reviewer 完成 + main-agent orchestration 完成 + final report 证据）
 - `scripts/studio_sync_task_state.py`：修复 task 的 status / phase / progress 不一致
 - `scripts/studio_stall_check.py`：检测后台空转/停滞
+- `scripts/studio_migrate_dispatch_history.py`：把旧 `step-*` 派工记录标记为 legacy，便于稳定 id 迁移
 - `scripts/studio_feedback.py`：像 ROS2 action feedback 一样输出阶段性进度
 - `scripts/studio_feedback_notify.py`：把阶段性进度主动发到消息层
 - `scripts/studio_report.py`：筛出应该主动汇报的任务
