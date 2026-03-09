@@ -897,14 +897,14 @@
       "scheduler": {
         "eligible": true,
         "score": 70,
-        "lastScheduledAt": "2026-03-09T16:38:31+08:00"
+        "lastScheduledAt": "2026-03-09T16:42:34+08:00"
       },
       "runtime": {
         "mode": "background-daemon",
         "session_id": "glow-tidepool",
         "started_by": "main-agent"
       },
-      "last_report_ts": 1773045521.714829,
+      "last_report_ts": 1773045754.713892,
       "dispatch_history": [
         {
           "id": "c7783c41-step-1",

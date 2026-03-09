@@ -44,8 +44,10 @@
 - `scripts/studio_agent_adapter.py`：按 agent 类型生成派工 prompt 骨架，供真实执行适配层接入
 - `scripts/studio_dispatch_real.py`：把部分 dispatch item 分流到本机 reviewer wrapper（Gemini / Oracle / Qwen）
 - `scripts/studio_dispatch_collect.py`：读取 wrapper 输出并回写 dispatch 状态与输出路径
+- `scripts/studio_dispatch_launch.py`：异步启动真实 wrapper，并记录 runtime meta
+- `scripts/studio_dispatch_poll.py`：轮询 runtime meta，准备好后自动 collect
 - `scripts/studio_feedback.py`：像 ROS2 action feedback 一样输出阶段性进度
-- `studio_runner.py` 会在后台自动触发 `dispatch_run`，并在 dispatch 状态变化后继续联动 progress / report / feedback
+- `studio_runner.py` 会在后台自动做 queue -> launch -> poll -> collect，并在 dispatch 状态变化后继续联动 progress / report / feedback
 - `scripts/studio_feedback_notify.py`：把阶段性进度主动发到消息层
 - `scripts/studio_report.py`：筛出应该主动汇报的任务
 - `scripts/studio_notify.py`：把可汇报任务真正发到消息层
