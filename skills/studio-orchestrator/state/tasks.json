@@ -829,6 +829,10 @@
         {
           "time": "2026-03-09T16:24:59+08:00",
           "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T16:35:28+08:00",
+          "message": "dispatch collect: c7783c41-report-main-agent-main => running"
         }
       ],
       "agent_plan": [
@@ -880,9 +884,10 @@
           "role": "main-agent",
           "phase": "report",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
-          "status": "planned",
+          "status": "running",
           "updated_at": null,
-          "note": null
+          "note": null,
+          "output_path": "/tmp/nonexistent-wrapper-output.txt"
         }
       ],
       "scheduler": {
@@ -938,9 +943,10 @@
           "role": "main-agent",
           "phase": "report",
           "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
-          "status": "planned",
+          "status": "running",
           "updated_at": null,
-          "note": null
+          "note": null,
+          "output_path": "/tmp/nonexistent-wrapper-output.txt"
         }
       ]
     }

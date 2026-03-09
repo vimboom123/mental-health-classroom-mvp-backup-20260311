@@ -11,6 +11,7 @@ TASKS_FILE = os.path.join(BASE_DIR, "state", "tasks.json")
 QUEUE_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_queue.py")
 ADAPTER_PY = os.path.join(BASE_DIR, "scripts", "studio_agent_adapter.py")
 REAL_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_real.py")
+COLLECT_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_collect.py")
 
 
 def now_iso():
@@ -71,6 +72,7 @@ def main():
         "--phase", task.get("phase") or "",
         "--instruction", current.get("instruction") or "",
     ], text=True)
+    real_payload = json.loads(real)
 
     execution_record = {
         "time": now_iso(),
@@ -79,8 +81,8 @@ def main():
         "kind": current.get("kind"),
         "instruction": current.get("instruction"),
         "adapter_payload": json.loads(adapter),
-        "real_payload": json.loads(real),
-        "mode": "adapter+real-wrapper" if json.loads(real).get('supported') else "adapter-placeholder",
+        "real_payload": real_payload,
+        "mode": "adapter+real-wrapper" if real_payload.get('supported') else "adapter-placeholder",
     }
 
     data = load_tasks()
@@ -90,7 +92,11 @@ def main():
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    subprocess.run([sys.executable, QUEUE_PY, "update", args.task_id, current["id"], "done", "--note", "placeholder dispatch completed"], check=True)
+    if real_payload.get('supported') and real_payload.get('output_path'):
+        subprocess.run([sys.executable, COLLECT_PY, args.task_id, current['id'], real_payload['output_path']], check=True)
+    else:
+        subprocess.run([sys.executable, QUEUE_PY, "update", args.task_id, current["id"], "done", "--note", "placeholder dispatch completed"], check=True)
+
     print(json.dumps({"task_id": args.task_id, "ran": execution_record}, ensure_ascii=False, indent=2))
 
 

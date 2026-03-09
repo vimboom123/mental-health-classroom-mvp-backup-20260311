@@ -43,6 +43,7 @@
 - `scripts/studio_migrate_dispatch_history.py`：把旧 `step-*` 派工记录标记为 legacy，便于稳定 id 迁移
 - `scripts/studio_agent_adapter.py`：按 agent 类型生成派工 prompt 骨架，供真实执行适配层接入
 - `scripts/studio_dispatch_real.py`：把部分 dispatch item 分流到本机 reviewer wrapper（Gemini / Oracle / Qwen）
+- `scripts/studio_dispatch_collect.py`：读取 wrapper 输出并回写 dispatch 状态与输出路径
 - `scripts/studio_feedback.py`：像 ROS2 action feedback 一样输出阶段性进度
 - `scripts/studio_feedback_notify.py`：把阶段性进度主动发到消息层
 - `scripts/studio_report.py`：筛出应该主动汇报的任务
