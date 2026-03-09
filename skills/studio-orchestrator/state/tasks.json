@@ -714,10 +714,11 @@
       "goal": "继续推进 AI 采纳论文终稿改写并主动汇报",
       "status": "in_progress",
       "phase": "report",
-      "next": "论文改写任务完成",
+      "next": "先完成 reviewer 并单清单，再按清单继续统稿",
       "owner": "main-agent",
       "artifacts": [
-        "lexar/shit-template/manuscript_final.md"
+        "lexar/shit-template/manuscript_final.md",
+        "lexar/shit-template/reviewer_merge_checklist.md"
       ],
       "watched_files": [],
       "watched_process_logs": [],
@@ -727,16 +728,16 @@
       },
       "priority": 50,
       "progress": {
-        "percent": 100,
-        "current": 8,
+        "percent": 70,
+        "current": 5,
         "total": 8,
-        "status_text": "当前阶段：done",
-        "last_feedback_ts": 1773045511.799726,
-        "last_feedback_percent": 90
+        "status_text": "已生成 reviewer 并单清单，下一步按清单继续统稿",
+        "last_feedback_ts": 1773047626.414904,
+        "last_feedback_percent": 70
       },
       "blocker": null,
       "created_at": "2026-03-09T15:53:41+08:00",
-      "updated_at": "2026-03-09T17:03:06+08:00",
+      "updated_at": "2026-03-09T17:13:46+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:53:41+08:00",
@@ -893,6 +894,30 @@
         {
           "time": "2026-03-09T17:03:07+08:00",
           "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:08:13+08:00",
+          "message": "completion evidence marked: 已完成 reviewer 意见汇总、产物校验、最终汇报与主智能体验收；按新 gate 规则确认闭环"
+        },
+        {
+          "time": "2026-03-09T17:08:13+08:00",
+          "message": "runner: doc report -> done"
+        },
+        {
+          "time": "2026-03-09T17:08:13+08:00",
+          "message": "active roles refreshed for phase done"
+        },
+        {
+          "time": "2026-03-09T17:08:13+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:13:30+08:00",
+          "message": "撤销错误 done，恢复论文任务到 in_progress/report"
+        },
+        {
+          "time": "2026-03-09T17:13:46+08:00",
+          "message": "已生成 reviewer 并单清单 reviewer_merge_checklist.md"
         }
       ],
       "agent_plan": [
@@ -940,7 +965,7 @@
       "scheduler": {
         "eligible": true,
         "score": 70,
-        "lastScheduledAt": "2026-03-09T17:03:06+08:00"
+        "lastScheduledAt": "2026-03-09T17:08:13+08:00"
       },
       "runtime": {
         "mode": "background-daemon",
@@ -1012,7 +1037,9 @@
         "review_merged": true,
         "artifact_validated": true,
         "main_acceptance": false,
-        "summary": ""
+        "summary": "撤销错误 done，回到 reviewer 并单与最终统稿阶段",
+        "marked_at": "2026-03-09T17:08:13+08:00",
+        "marked_by": "main-agent"
       }
     }
   ]

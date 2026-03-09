@@ -207,6 +207,8 @@ python3 skills/studio-orchestrator/scripts/studio_task.py update <task_id> \
 
 ## 备注
 
+产品线当前策略：先用 `examples/minimal-validation-plan.md` 中的低歧义最小任务打磨执行链，再回到真实生产任务。
+
 这是第一版可运行 orchestrator。它现在已经能做这些事：
 - 任务登记与状态追踪
 - scheduler 选出本轮活跃任务
