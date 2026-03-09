@@ -64,13 +64,13 @@
         "current": 2,
         "total": 5,
         "status_text": "已完成 watch/process 去重，正在做调度与反馈层",
-        "last_feedback_ts": 1773041418.704542,
+        "last_feedback_ts": 1773042822.156049,
         "last_feedback_percent": 40
       },
       "scheduler": {
         "eligible": true,
         "score": 110,
-        "lastScheduledAt": "2026-03-09T15:44:56+08:00"
+        "lastScheduledAt": "2026-03-09T15:53:41+08:00"
       },
       "notify": {
         "channel": "telegram",
@@ -207,7 +207,7 @@
       "scheduler": {
         "eligible": true,
         "score": 70,
-        "lastScheduledAt": "2026-03-09T15:44:56+08:00"
+        "lastScheduledAt": "2026-03-09T15:53:41+08:00"
       },
       "agent_plan": [
         {
@@ -312,7 +312,7 @@
       "scheduler": {
         "eligible": true,
         "score": 70,
-        "lastScheduledAt": "2026-03-09T15:44:56+08:00"
+        "lastScheduledAt": "2026-03-09T15:53:41+08:00"
       }
     },
     {
@@ -560,6 +560,133 @@
           "classification": "done_signal",
           "fingerprint": "e9a9f26798169da85364adfd86dddd537b3d9c7b22cd0d005fa8cfa84fa8e1a9",
           "offset": 16
+        }
+      ],
+      "scheduler": {
+        "eligible": false,
+        "score": 70,
+        "lastScheduledAt": null
+      }
+    },
+    {
+      "id": "c7783c41",
+      "title": "Paper revision - manuscript_final",
+      "type": "doc",
+      "goal": "继续推进 AI 采纳论文终稿改写并主动汇报",
+      "status": "in_progress",
+      "phase": "revise",
+      "next": "继续细化方法与结论段落，并准备下一轮反馈",
+      "owner": "main-agent",
+      "artifacts": [
+        "lexar/shit-template/manuscript_final.md"
+      ],
+      "watched_files": [],
+      "watched_process_logs": [],
+      "notify": {
+        "channel": "telegram",
+        "target": "8783735951"
+      },
+      "priority": 50,
+      "progress": {
+        "percent": 55,
+        "current": 4,
+        "total": 7,
+        "status_text": "已完成摘要、结果解释、结论三处改写，进入正文细修",
+        "last_feedback_ts": 1773042885.408526,
+        "last_feedback_percent": 55
+      },
+      "blocker": null,
+      "created_at": "2026-03-09T15:53:41+08:00",
+      "updated_at": "2026-03-09T15:54:45+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T15:53:41+08:00",
+          "message": "studio_start: task created and handed to runner"
+        },
+        {
+          "time": "2026-03-09T15:53:41+08:00",
+          "message": "roles assigned for task type doc"
+        },
+        {
+          "time": "2026-03-09T15:53:41+08:00",
+          "message": "active roles refreshed for phase intake"
+        },
+        {
+          "time": "2026-03-09T15:54:45+08:00",
+          "message": "已对 manuscript_final.md 完成摘要/结果解释/结论三处实改"
+        },
+        {
+          "time": "2026-03-09T15:54:45+08:00",
+          "message": "active roles refreshed for phase revise"
+        }
+      ],
+      "agent_plan": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 验收 / 最终汇报 / 结构统筹"
+        },
+        {
+          "role": "writer",
+          "agent": "gemini",
+          "responsibility": "表达层、润色、可读性优化"
+        },
+        {
+          "role": "reviewer",
+          "agent": "claude-code",
+          "responsibility": "代码/文本审校、问题发现"
+        },
+        {
+          "role": "second-opinion",
+          "agent": "oracle",
+          "responsibility": "全局复盘与第二视角"
+        },
+        {
+          "role": "cn-reviewer",
+          "agent": "qwen",
+          "responsibility": "中文表达、本土语境、中文总结"
+        }
+      ],
+      "active_roles": [
+        {
+          "role": "writer",
+          "agent": "gemini",
+          "responsibility": "表达层、润色、可读性优化"
+        },
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 验收 / 最终汇报 / 结构统筹"
+        }
+      ],
+      "next_actions": [
+        {
+          "role": "writer",
+          "agent": "gemini",
+          "action": "交给 Gemini 做改写、润色、表达层优化"
+        },
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "action": "主智能体负责统筹、验收、汇报、必要时拍板升级"
+        }
+      ],
+      "dispatch_plan": [
+        {
+          "id": "c7783c41-step-1",
+          "agent": "gemini",
+          "kind": "expression",
+          "role": "writer",
+          "instruction": "交给 Gemini 做改写、润色、表达层优化",
+          "status": "planned"
+        },
+        {
+          "id": "c7783c41-step-2",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned"
         }
       ],
       "scheduler": {
