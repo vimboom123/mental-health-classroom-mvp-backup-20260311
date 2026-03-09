@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -70,16 +71,30 @@ def classify_text(text):
     return "neutral"
 
 
+def fingerprint(text):
+    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
+
+
 def inspect_file(path, max_chars=4000):
     if not os.path.exists(path):
-        return {"exists": False, "classification": "missing", "excerpt": ""}
+        return {"exists": False, "classification": "missing", "excerpt": "", "fingerprint": None}
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         text = f.read(max_chars)
     return {
         "exists": True,
         "classification": classify_text(text),
         "excerpt": text[-800:],
+        "fingerprint": fingerprint(text),
     }
+
+
+def already_ingested(task, path, fp):
+    if not fp:
+        return False
+    for item in reversed(task.get("watch", [])):
+        if item.get("path") == path and item.get("fingerprint") == fp:
+            return True
+    return False
 
 
 def cmd_probe(args):
@@ -99,10 +114,24 @@ def cmd_ingest(args):
     result = inspect_file(args.path)
     ts = now_iso()
     task.setdefault("watch", [])
+    fp = result.get("fingerprint")
+
+    if already_ingested(task, args.path, fp):
+        payload = {
+            "task_id": args.task_id,
+            "path": args.path,
+            "skipped": True,
+            "reason": "same fingerprint already ingested",
+            "fingerprint": fp,
+        }
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return
+
     task["watch"].append({
         "time": ts,
         "path": args.path,
         "classification": result["classification"],
+        "fingerprint": fp,
     })
     cls = result["classification"]
     if cls == "done_signal":

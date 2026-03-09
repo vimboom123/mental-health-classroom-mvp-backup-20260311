@@ -41,13 +41,13 @@
       "type": "doc",
       "goal": "验证统一入口 + watch + report",
       "status": "in_progress",
-      "phase": "final_check",
-      "next": "做最终检查并准备汇报",
+      "phase": "report",
+      "next": "输出变更摘要与当前结论",
       "owner": "main-agent",
       "artifacts": [],
       "blocker": null,
       "created_at": "2026-03-09T15:01:38+08:00",
-      "updated_at": "2026-03-09T15:16:11+08:00",
+      "updated_at": "2026-03-09T15:18:22+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:01:38+08:00",
@@ -72,6 +72,10 @@
         {
           "time": "2026-03-09T15:16:11+08:00",
           "message": "runner: doc polish -> final_check"
+        },
+        {
+          "time": "2026-03-09T15:18:22+08:00",
+          "message": "runner: doc final_check -> report"
         }
       ],
       "watch": [
@@ -88,13 +92,13 @@
       "type": "doc",
       "goal": "验证 process/session 输出接管",
       "status": "in_progress",
-      "phase": "revise",
-      "next": "根据修改清单持续改正文",
+      "phase": "report",
+      "next": "输出变更摘要与当前结论",
       "owner": "main-agent",
       "artifacts": [],
       "blocker": null,
       "created_at": "2026-03-09T15:09:13+08:00",
-      "updated_at": "2026-03-09T15:16:11+08:00",
+      "updated_at": "2026-03-09T15:18:23+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:09:13+08:00",
@@ -119,6 +123,18 @@
         {
           "time": "2026-03-09T15:16:11+08:00",
           "message": "runner: doc review_merge -> revise"
+        },
+        {
+          "time": "2026-03-09T15:18:22+08:00",
+          "message": "runner: doc revise -> polish"
+        },
+        {
+          "time": "2026-03-09T15:18:23+08:00",
+          "message": "runner: doc polish -> final_check"
+        },
+        {
+          "time": "2026-03-09T15:18:23+08:00",
+          "message": "runner: doc final_check -> report"
         }
       ],
       "watch": [
@@ -135,8 +151,8 @@
       "type": "doc",
       "goal": "验证 runner 串 watch/decide/notify",
       "status": "in_progress",
-      "phase": "polish",
-      "next": "收尾润色并统一口径",
+      "phase": "report",
+      "next": "输出变更摘要与当前结论",
       "owner": "main-agent",
       "artifacts": [],
       "watched_files": [
@@ -145,7 +161,7 @@
       "notify": null,
       "blocker": null,
       "created_at": "2026-03-09T15:16:11+08:00",
-      "updated_at": "2026-03-09T15:16:12+08:00",
+      "updated_at": "2026-03-09T15:18:23+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:16:11+08:00",
@@ -170,6 +186,18 @@
         {
           "time": "2026-03-09T15:16:12+08:00",
           "message": "runner: doc revise -> polish"
+        },
+        {
+          "time": "2026-03-09T15:18:22+08:00",
+          "message": "watch ingest: studio_auto_watch.txt => done_signal"
+        },
+        {
+          "time": "2026-03-09T15:18:22+08:00",
+          "message": "runner: doc polish -> final_check"
+        },
+        {
+          "time": "2026-03-09T15:18:23+08:00",
+          "message": "runner: doc final_check -> report"
         }
       ],
       "watch": [
@@ -182,6 +210,64 @@
           "time": "2026-03-09T15:16:12+08:00",
           "path": "/tmp/studio_auto_watch.txt",
           "classification": "done_signal"
+        },
+        {
+          "time": "2026-03-09T15:18:22+08:00",
+          "path": "/tmp/studio_auto_watch.txt",
+          "classification": "done_signal",
+          "fingerprint": "e9a9f26798169da85364adfd86dddd537b3d9c7b22cd0d005fa8cfa84fa8e1a9"
+        }
+      ]
+    },
+    {
+      "id": "bd07dc88",
+      "title": "Dedupe demo",
+      "type": "doc",
+      "goal": "验证同一 watch 结果不会重复 ingest",
+      "status": "in_progress",
+      "phase": "final_check",
+      "next": "做最终检查并准备汇报",
+      "owner": "main-agent",
+      "artifacts": [],
+      "watched_files": [
+        "/tmp/studio_dedupe_watch.txt"
+      ],
+      "notify": null,
+      "blocker": null,
+      "created_at": "2026-03-09T15:18:21+08:00",
+      "updated_at": "2026-03-09T15:18:24+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T15:18:21+08:00",
+          "message": "studio_start: task created and handed to runner"
+        },
+        {
+          "time": "2026-03-09T15:18:22+08:00",
+          "message": "watch ingest: studio_dedupe_watch.txt => done_signal"
+        },
+        {
+          "time": "2026-03-09T15:18:22+08:00",
+          "message": "runner: doc intake -> review_collect"
+        },
+        {
+          "time": "2026-03-09T15:18:23+08:00",
+          "message": "decide: done-signal found in recent logs"
+        },
+        {
+          "time": "2026-03-09T15:18:23+08:00",
+          "message": "runner: doc revise -> polish"
+        },
+        {
+          "time": "2026-03-09T15:18:24+08:00",
+          "message": "runner: doc polish -> final_check"
+        }
+      ],
+      "watch": [
+        {
+          "time": "2026-03-09T15:18:22+08:00",
+          "path": "/tmp/studio_dedupe_watch.txt",
+          "classification": "done_signal",
+          "fingerprint": "e9a9f26798169da85364adfd86dddd537b3d9c7b22cd0d005fa8cfa84fa8e1a9"
         }
       ]
     }
