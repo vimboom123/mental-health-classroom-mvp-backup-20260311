@@ -47,6 +47,13 @@ curl -s "https://api.open-meteo.com/v1/forecast?latitude=30.29365&longitude=120.
 - Preferred inline form: `MEDIA:~/.openclaw/workspace/outbox/file.png` or the exact absolute `/Users/.../.openclaw/workspace/...` path.
 - If a tool already printed a valid `MEDIA:` line or absolute file path, reuse it verbatim.
 
+## X Trends Runtime Rules (critical)
+
+- Preferred X trends source: `scripts/x_trends_apify.sh` with `APIFY_TOKEN` set.
+- Current working actor: `karamelo/twitter-trends-scraper` via Apify sync dataset API.
+- Use for X/Twitter trend snapshots in scheduled news reports.
+- If Apify actor fails or token is unavailable, fall back to weaker third-party web aggregation and clearly label it as fallback.
+
 ## Reviewer CLI Runtime Rules (critical)
 
 - On this machine, do **not** call bare `gemini` or bare `oracle` for reviewer/background multi-agent runs.
@@ -73,6 +80,21 @@ Why:
 - bare CLI runs may inherit a PATH without `/usr/sbin`
 - then both Gemini and Oracle can fail at startup with `spawnSync sysctl ENOENT`
 - Gemini also requires a compatible `~/.gemini/settings.json`
+
+## iCloud Find My
+
+- Apple ID: `leevimboom@gmail.com`
+- For user requests about “我的手机地址 / 位置 / 当前位置”, default to querying device `leeee (iPhone 15 Pro)` via the existing `icloud` / Find My workflow.
+- Do not ask again for the Apple ID unless the Find My session has actually expired or Apple re-auth is required.
+- Do not infer districts/streets from raw coordinates by eyeballing. For any location answer that needs a concrete place name, run reverse geocoding first (prefer AMap for China), then answer from the returned address.
+
+## Camera Capture Runtime Rules (critical)
+
+- When the user asks to “拍一张 / 用摄像头拍”, do not imply the Mac built-in camera was used until capture is confirmed.
+- First enumerate available AVFoundation devices, then state clearly which source actually succeeded: built-in Mac camera, iPhone Continuity Camera, or Desk View.
+- If the first capture fails and a fallback source is used, explicitly tell the user before presenting the image.
+- If replying with attachments/paths and the user acknowledges with “ok/嗯/看到”, do not send `NO_REPLY`; send a short explicit confirmation instead.
+- Camera privacy attribution on macOS may surface the host app (for example Cursor) rather than the final CLI binary; avoid overconfident claims about which app macOS will show in permission UI unless process evidence is checked.
 
 ## wttr Fallback
 
