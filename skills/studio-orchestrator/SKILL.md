@@ -53,7 +53,7 @@
 - `scripts/studio_feedback_notify.py`：把阶段性进度主动发到消息层
 - `scripts/studio_report.py`：筛出应该主动汇报的任务
 - `scripts/studio_notify.py`：把可汇报任务真正发到消息层
-- `scripts/studio_start.py`：统一入口，创建任务并交给 runner 首轮接管
+- `scripts/studio_start.py`：统一入口，创建任务并默认以非阻塞后台模式启动 runner
 - `examples/tasks.sample.json`：示例状态文件
 
 ## 最小工作流

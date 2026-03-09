@@ -732,7 +732,7 @@
         "current": 5,
         "total": 8,
         "status_text": "已生成 reviewer 并单清单，下一步按清单继续统稿",
-        "last_feedback_ts": 1773047626.414904,
+        "last_feedback_ts": 1773048383.029416,
         "last_feedback_percent": 70
       },
       "blocker": null,
@@ -965,14 +965,14 @@
       "scheduler": {
         "eligible": true,
         "score": 70,
-        "lastScheduledAt": "2026-03-09T17:08:13+08:00"
+        "lastScheduledAt": "2026-03-09T17:28:33+08:00"
       },
       "runtime": {
         "mode": "background-daemon",
         "session_id": "glow-tidepool",
         "started_by": "main-agent"
       },
-      "last_report_ts": 1773045906.315102,
+      "last_report_ts": 1773048390.072639,
       "dispatch_history": [
         {
           "id": "c7783c41-step-1",
@@ -1040,6 +1040,572 @@
         "summary": "撤销错误 done，回到 reviewer 并单与最终统稿阶段",
         "marked_at": "2026-03-09T17:08:13+08:00",
         "marked_by": "main-agent"
+      }
+    },
+    {
+      "id": "34e0bc32",
+      "title": "Minimal doc validation",
+      "type": "doc",
+      "goal": "改写 minimal-doc-sample.md 的三段并验证执行链",
+      "status": "in_progress",
+      "phase": "report",
+      "next": "输出变更摘要与当前结论",
+      "owner": "main-agent",
+      "artifacts": [
+        "skills/studio-orchestrator/examples/minimal-doc-sample.md"
+      ],
+      "watched_files": [],
+      "watched_process_logs": [],
+      "notify": {
+        "channel": "telegram",
+        "target": "8783735951"
+      },
+      "priority": 50,
+      "progress": {
+        "percent": 10,
+        "current": 1,
+        "total": 5,
+        "status_text": "最小文档任务已启动，准备改写三段",
+        "last_feedback_ts": 1773048514.870033,
+        "last_feedback_percent": 10
+      },
+      "blocker": null,
+      "created_at": "2026-03-09T17:26:22+08:00",
+      "updated_at": "2026-03-09T17:26:52+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T17:26:22+08:00",
+          "message": "studio_start: task created and handed to runner"
+        },
+        {
+          "time": "2026-03-09T17:26:22+08:00",
+          "message": "roles assigned for task type doc"
+        },
+        {
+          "time": "2026-03-09T17:26:22+08:00",
+          "message": "active roles refreshed for phase intake"
+        },
+        {
+          "time": "2026-03-09T17:26:22+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "runner: doc intake -> review_collect"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "active roles refreshed for phase review_collect"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "runner: doc review_collect -> review_merge"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "active roles refreshed for phase review_merge"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "runner: doc review_merge -> revise"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "active roles refreshed for phase revise"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "runner: doc revise -> polish"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "active roles refreshed for phase polish"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:26:37+08:00",
+          "message": "runner: doc polish -> final_check"
+        },
+        {
+          "time": "2026-03-09T17:26:38+08:00",
+          "message": "active roles refreshed for phase final_check"
+        },
+        {
+          "time": "2026-03-09T17:26:38+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:26:38+08:00",
+          "message": "runner: doc final_check -> report"
+        },
+        {
+          "time": "2026-03-09T17:26:38+08:00",
+          "message": "active roles refreshed for phase report"
+        },
+        {
+          "time": "2026-03-09T17:26:38+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:26:38+08:00",
+          "message": "dispatch queued: 34e0bc32-report-main-agent-main"
+        },
+        {
+          "time": "2026-03-09T17:26:38+08:00",
+          "message": "dispatch running: 34e0bc32-report-main-agent-main"
+        },
+        {
+          "time": "2026-03-09T17:26:52+08:00",
+          "message": "最小文档验证任务启动"
+        }
+      ],
+      "agent_plan": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 验收 / 最终汇报 / 结构统筹"
+        },
+        {
+          "role": "writer",
+          "agent": "gemini",
+          "responsibility": "表达层、润色、可读性优化"
+        },
+        {
+          "role": "reviewer",
+          "agent": "claude-code",
+          "responsibility": "代码/文本审校、问题发现"
+        },
+        {
+          "role": "second-opinion",
+          "agent": "oracle",
+          "responsibility": "全局复盘与第二视角"
+        },
+        {
+          "role": "cn-reviewer",
+          "agent": "qwen",
+          "responsibility": "中文表达、本土语境、中文总结"
+        }
+      ],
+      "active_roles": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 验收 / 最终汇报 / 结构统筹"
+        }
+      ],
+      "next_actions": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "action": "主智能体负责统筹、验收、汇报、必要时拍板升级"
+        }
+      ],
+      "dispatch_plan": [
+        {
+          "id": "34e0bc32-report-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "report",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "running",
+          "updated_at": "2026-03-09T17:26:38+08:00",
+          "note": null,
+          "runtime_meta": "/Volumes/Lexar/OpenClawStore/state/workspace/skills/studio-orchestrator/state/dispatch-runtime/34e0bc32-report-main-agent-main.json"
+        }
+      ],
+      "dispatch_history": [
+        {
+          "id": "34e0bc32-intake-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "intake",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-review_collect-reviewer-claude-code",
+          "agent": "claude-code",
+          "kind": "review",
+          "role": "reviewer",
+          "phase": "review_collect",
+          "instruction": "交给 Claude Code 做审查、找问题、提改进",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-review_collect-second-opinion-oracle",
+          "agent": "oracle",
+          "kind": "second-opinion",
+          "role": "second-opinion",
+          "phase": "review_collect",
+          "instruction": "交给 Oracle 做全局复盘和第二视角审阅",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-review_collect-cn-reviewer-qwen",
+          "agent": "qwen",
+          "kind": "cn-review",
+          "role": "cn-reviewer",
+          "phase": "review_collect",
+          "instruction": "交给 Qwen 做中文表达、本土化判断、中文汇总",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-review_merge-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "review_merge",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-review_merge-reviewer-claude-code",
+          "agent": "claude-code",
+          "kind": "review",
+          "role": "reviewer",
+          "phase": "review_merge",
+          "instruction": "交给 Claude Code 做审查、找问题、提改进",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-revise-writer-gemini",
+          "agent": "gemini",
+          "kind": "expression",
+          "role": "writer",
+          "phase": "revise",
+          "instruction": "交给 Gemini 做改写、润色、表达层优化",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-revise-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "revise",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-polish-writer-gemini",
+          "agent": "gemini",
+          "kind": "expression",
+          "role": "writer",
+          "phase": "polish",
+          "instruction": "交给 Gemini 做改写、润色、表达层优化",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-polish-cn-reviewer-qwen",
+          "agent": "qwen",
+          "kind": "cn-review",
+          "role": "cn-reviewer",
+          "phase": "polish",
+          "instruction": "交给 Qwen 做中文表达、本土化判断、中文汇总",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-final_check-reviewer-claude-code",
+          "agent": "claude-code",
+          "kind": "review",
+          "role": "reviewer",
+          "phase": "final_check",
+          "instruction": "交给 Claude Code 做审查、找问题、提改进",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-final_check-second-opinion-oracle",
+          "agent": "oracle",
+          "kind": "second-opinion",
+          "role": "second-opinion",
+          "phase": "final_check",
+          "instruction": "交给 Oracle 做全局复盘和第二视角审阅",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-final_check-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "final_check",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "34e0bc32-report-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "report",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "running",
+          "updated_at": "2026-03-09T17:26:38+08:00",
+          "note": null
+        }
+      ],
+      "scheduler": {
+        "eligible": true,
+        "score": 70,
+        "lastScheduledAt": "2026-03-09T17:28:33+08:00"
+      },
+      "completion_evidence": {
+        "kind": "doc",
+        "review_merged": false,
+        "artifact_validated": true,
+        "main_acceptance": false,
+        "summary": ""
+      },
+      "last_report_ts": 1773048405.987537
+    },
+    {
+      "id": "c4156fa5",
+      "title": "Minimal doc validation v2",
+      "type": "doc",
+      "goal": "改写 minimal-doc-sample.md 的三段并验证非阻塞启动链",
+      "status": "waiting_reviewer",
+      "phase": "review_collect",
+      "next": "等待 reviewer / 子代理结果回流",
+      "owner": "main-agent",
+      "artifacts": [],
+      "watched_files": [],
+      "watched_process_logs": [],
+      "notify": {
+        "channel": "telegram",
+        "target": "8783735951"
+      },
+      "priority": 50,
+      "progress": {
+        "percent": 25,
+        "current": 2,
+        "total": 8,
+        "status_text": "当前阶段：review_collect",
+        "last_feedback_ts": null
+      },
+      "blocker": null,
+      "created_at": "2026-03-09T17:28:33+08:00",
+      "updated_at": "2026-03-09T17:28:42+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T17:28:33+08:00",
+          "message": "studio_start: task created and handed to runner"
+        },
+        {
+          "time": "2026-03-09T17:28:33+08:00",
+          "message": "roles assigned for task type doc"
+        },
+        {
+          "time": "2026-03-09T17:28:33+08:00",
+          "message": "active roles refreshed for phase intake"
+        },
+        {
+          "time": "2026-03-09T17:28:33+08:00",
+          "message": "dispatch plan refreshed"
+        },
+        {
+          "time": "2026-03-09T17:28:42+08:00",
+          "message": "runner: doc intake -> review_collect"
+        },
+        {
+          "time": "2026-03-09T17:28:42+08:00",
+          "message": "active roles refreshed for phase review_collect"
+        },
+        {
+          "time": "2026-03-09T17:28:42+08:00",
+          "message": "dispatch plan refreshed"
+        }
+      ],
+      "agent_plan": [
+        {
+          "role": "main-agent",
+          "agent": "main",
+          "responsibility": "PM / 验收 / 最终汇报 / 结构统筹"
+        },
+        {
+          "role": "writer",
+          "agent": "gemini",
+          "responsibility": "表达层、润色、可读性优化"
+        },
+        {
+          "role": "reviewer",
+          "agent": "claude-code",
+          "responsibility": "代码/文本审校、问题发现"
+        },
+        {
+          "role": "second-opinion",
+          "agent": "oracle",
+          "responsibility": "全局复盘与第二视角"
+        },
+        {
+          "role": "cn-reviewer",
+          "agent": "qwen",
+          "responsibility": "中文表达、本土语境、中文总结"
+        }
+      ],
+      "active_roles": [
+        {
+          "role": "reviewer",
+          "agent": "claude-code",
+          "responsibility": "代码/文本审校、问题发现"
+        },
+        {
+          "role": "second-opinion",
+          "agent": "oracle",
+          "responsibility": "全局复盘与第二视角"
+        },
+        {
+          "role": "cn-reviewer",
+          "agent": "qwen",
+          "responsibility": "中文表达、本土语境、中文总结"
+        }
+      ],
+      "next_actions": [
+        {
+          "role": "reviewer",
+          "agent": "claude-code",
+          "action": "交给 Claude Code 做审查、找问题、提改进"
+        },
+        {
+          "role": "second-opinion",
+          "agent": "oracle",
+          "action": "交给 Oracle 做全局复盘和第二视角审阅"
+        },
+        {
+          "role": "cn-reviewer",
+          "agent": "qwen",
+          "action": "交给 Qwen 做中文表达、本土化判断、中文汇总"
+        }
+      ],
+      "dispatch_plan": [
+        {
+          "id": "c4156fa5-review_collect-reviewer-claude-code",
+          "agent": "claude-code",
+          "kind": "review",
+          "role": "reviewer",
+          "phase": "review_collect",
+          "instruction": "交给 Claude Code 做审查、找问题、提改进",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "c4156fa5-review_collect-second-opinion-oracle",
+          "agent": "oracle",
+          "kind": "second-opinion",
+          "role": "second-opinion",
+          "phase": "review_collect",
+          "instruction": "交给 Oracle 做全局复盘和第二视角审阅",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "c4156fa5-review_collect-cn-reviewer-qwen",
+          "agent": "qwen",
+          "kind": "cn-review",
+          "role": "cn-reviewer",
+          "phase": "review_collect",
+          "instruction": "交给 Qwen 做中文表达、本土化判断、中文汇总",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        }
+      ],
+      "dispatch_history": [
+        {
+          "id": "c4156fa5-intake-main-agent-main",
+          "agent": "main",
+          "kind": "orchestration",
+          "role": "main-agent",
+          "phase": "intake",
+          "instruction": "主智能体负责统筹、验收、汇报、必要时拍板升级",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "c4156fa5-review_collect-reviewer-claude-code",
+          "agent": "claude-code",
+          "kind": "review",
+          "role": "reviewer",
+          "phase": "review_collect",
+          "instruction": "交给 Claude Code 做审查、找问题、提改进",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "c4156fa5-review_collect-second-opinion-oracle",
+          "agent": "oracle",
+          "kind": "second-opinion",
+          "role": "second-opinion",
+          "phase": "review_collect",
+          "instruction": "交给 Oracle 做全局复盘和第二视角审阅",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        },
+        {
+          "id": "c4156fa5-review_collect-cn-reviewer-qwen",
+          "agent": "qwen",
+          "kind": "cn-review",
+          "role": "cn-reviewer",
+          "phase": "review_collect",
+          "instruction": "交给 Qwen 做中文表达、本土化判断、中文汇总",
+          "status": "planned",
+          "updated_at": null,
+          "note": null
+        }
+      ],
+      "runtime": {
+        "mode": "background-daemon",
+        "started_by": "studio_start.py"
+      },
+      "scheduler": {
+        "eligible": true,
+        "score": 70,
+        "lastScheduledAt": "2026-03-09T17:28:33+08:00"
       }
     }
   ]
