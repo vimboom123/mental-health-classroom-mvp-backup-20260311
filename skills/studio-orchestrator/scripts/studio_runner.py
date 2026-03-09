@@ -20,6 +20,10 @@ FEEDBACK_NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_feedback_notify.p
 ACTIVE_ROLES_PY = os.path.join(BASE_DIR, "scripts", "studio_active_roles.py")
 NEXT_ACTIONS_PY = os.path.join(BASE_DIR, "scripts", "studio_next_actions.py")
 DISPATCH_PLAN_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_plan.py")
+TASK_PY = os.path.join(BASE_DIR, "scripts", "studio_task.py")
+
+TERMINAL_STATUSES = {"done", "cancelled", "waiting_user", "blocked", "failed"}
+ACTIVE_STATUSES = {"queued", "in_progress", "waiting_reviewer"}
 
 
 def now_iso():
@@ -52,74 +56,22 @@ def call_py(script, *args, check=True):
     return subprocess.run(cmd, check=check, capture_output=True, text=True)
 
 
-def ingest_watched_files(task):
-    watched = task.get("watched_files") or []
-    task_id = task.get("id")
-    out = []
-    for path in watched:
-        if not os.path.exists(path):
-            continue
-        res = call_py(
-            WATCH_PY,
-            "ingest",
-            task_id,
-            path,
-            "--on-done-phase",
-            infer_done_phase(task),
-            "--on-done-next",
-            infer_done_next(task),
-            check=False,
-        )
-        out.append({"path": path, "code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()})
-    return out
-
-
-def ingest_watched_process_logs(task):
-    watched = task.get("watched_process_logs") or []
-    task_id = task.get("id")
-    out = []
-    for path in watched:
-        if not os.path.exists(path):
-            continue
-        source_key = os.path.basename(path)
-        res = call_py(
-            PROCESS_WATCH_PY,
-            task_id,
-            "--log-file",
-            path,
-            "--source-key",
-            source_key,
-            "--on-done-phase",
-            infer_done_phase(task),
-            "--on-done-next",
-            infer_done_next(task),
-            check=False,
-        )
-        out.append({"path": path, "source_key": source_key, "code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()})
-    return out
-
-
-def maybe_decide(task):
-    res = call_py(DECIDE_PY, task.get("id"), check=False)
-    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
-
-
-def maybe_notify(task, min_interval):
-    notify = task.get("notify") or {}
-    target = notify.get("target")
-    channel = notify.get("channel") or "telegram"
-    if not target:
-        return None
-    res = call_py(NOTIFY_PY, "--task-id", task.get("id"), "--target", str(target), "--channel", channel, "--min-interval", str(min_interval), check=False)
-    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
-
-
-def maybe_feedback_notify(task, min_interval=600, min_progress_step=10):
-    notify = task.get("notify") or {}
-    if not notify.get("target"):
-        return None
-    res = call_py(FEEDBACK_NOTIFY_PY, "--task-id", task.get("id"), "--min-interval", str(min_interval), "--min-progress-step", str(min_progress_step), check=False)
-    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
+def infer_progress(task_type, phase):
+    phase_orders = {
+        "doc": ["intake", "review_collect", "review_merge", "revise", "polish", "final_check", "report", "done"],
+        "code": ["intake", "plan", "implement", "review", "test", "fixup", "report", "done"],
+        "engineering": ["intake", "investigate", "execute", "verify", "iterate", "report", "done"],
+        "general": ["intake", "execute", "verify", "report", "done"],
+    }
+    order = phase_orders.get(task_type, phase_orders["general"])
+    try:
+        idx = order.index(phase)
+    except ValueError:
+        idx = 0
+    current = idx + 1
+    total = len(order)
+    percent = int((current / total) * 100)
+    return {"percent": percent, "current": current, "total": total, "status_text": f"当前阶段：{phase}"}
 
 
 def scheduled_ids(max_active=3):
@@ -131,109 +83,50 @@ def scheduled_ids(max_active=3):
     return ids, payload
 
 
-def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
-    ensure_store()
-    runner = load_json(RUNNER_STATE_FILE)
-    changed = []
-    side_effects = []
-    ts = now_iso()
-
-    allowed_ids, sched_payload = scheduled_ids(max_active=max_active)
-    if sched_payload:
-        side_effects.append({"scheduler": sched_payload})
-
-    # refresh after every mutation because watch/decide may update file on disk
-    store = load_json(TASKS_FILE)
-    for task in store.get("tasks", []):
-        task_id = task.get("id")
-        status = task.get("status")
-        phase = task.get("phase")
-        task_type = task.get("type")
-
-        if allowed_ids is not None and task_id not in allowed_ids and status in {"queued", "in_progress", "waiting_reviewer"}:
-            side_effects.append({"task_id": task_id, "skipped_by_scheduler": True})
+def ingest_watched_files(task):
+    watched = task.get("watched_files") or []
+    out = []
+    for path in watched:
+        if not os.path.exists(path):
             continue
+        res = call_py(WATCH_PY, "ingest", task["id"], path, "--on-done-phase", infer_done_phase(task), "--on-done-next", infer_done_next(task), check=False)
+        out.append({"path": path, "code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()})
+    return out
 
-        if status in {"done", "cancelled", "waiting_user", "blocked"}:
-            notify_res = maybe_notify(task, notify_min_interval)
-            if notify_res:
-                side_effects.append({"task_id": task_id, "notify": notify_res})
+
+def ingest_watched_process_logs(task):
+    watched = task.get("watched_process_logs") or []
+    out = []
+    for path in watched:
+        if not os.path.exists(path):
             continue
+        source_key = os.path.basename(path)
+        res = call_py(PROCESS_WATCH_PY, task["id"], "--log-file", path, "--source-key", source_key, "--on-done-phase", infer_done_phase(task), "--on-done-next", infer_done_next(task), check=False)
+        out.append({"path": path, "source_key": source_key, "code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()})
+    return out
 
-        watch_res = ingest_watched_files(task)
-        if watch_res:
-            side_effects.append({"task_id": task_id, "watch": watch_res})
 
-        process_watch_res = ingest_watched_process_logs(task)
-        if process_watch_res:
-            side_effects.append({"task_id": task_id, "process_watch": process_watch_res})
+def maybe_decide(task):
+    res = call_py(DECIDE_PY, task["id"], check=False)
+    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
 
-        decide_res = maybe_decide(task)
-        if decide_res:
-            side_effects.append({"task_id": task_id, "decide": decide_res})
 
-        store = load_json(TASKS_FILE)
-        refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), task)
-        status = refreshed.get("status")
-        phase = refreshed.get("phase")
+def maybe_notify(task, min_interval):
+    notify = task.get("notify") or {}
+    target = notify.get("target")
+    channel = notify.get("channel") or "telegram"
+    if not target:
+        return None
+    res = call_py(NOTIFY_PY, "--task-id", task["id"], "--target", str(target), "--channel", channel, "--min-interval", str(min_interval), check=False)
+    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
 
-        if status in {"done", "cancelled", "waiting_user", "blocked"}:
-            notify_res = maybe_notify(refreshed, notify_min_interval)
-            if notify_res:
-                side_effects.append({"task_id": task_id, "notify": notify_res})
-            continue
 
-        recommendation = recommend(task_type, phase, status)
-        if recommendation:
-            new_phase = recommendation.get("phase")
-            new_status = recommendation.get("status")
-            next_step = recommendation.get("next")
-            log_msg = recommendation.get("log")
-            if not (new_phase == phase and new_status == status and next_step == refreshed.get("next")):
-                progress = infer_progress(refreshed.get("type"), new_phase)
-                call_py(
-                    os.path.join(BASE_DIR, "scripts", "studio_task.py"),
-                    "update",
-                    task_id,
-                    "--status", new_status,
-                    "--phase", new_phase,
-                    "--next", next_step,
-                    "--progress-percent", str(progress["percent"]),
-                    "--progress-current", str(progress["current"]),
-                    "--progress-total", str(progress["total"]),
-                    "--progress-status", progress["status_text"],
-                    "--log", log_msg,
-                )
-                changed.append({
-                    "task_id": task_id,
-                    "title": refreshed.get("title"),
-                    "status": new_status,
-                    "phase": new_phase,
-                    "next": next_step,
-                })
-                call_py(ACTIVE_ROLES_PY, task_id, check=False)
-                call_py(NEXT_ACTIONS_PY, task_id, check=False)
-                call_py(DISPATCH_PLAN_PY, task_id, check=False)
-                store = load_json(TASKS_FILE)
-                refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
-
-        feedback_res = maybe_feedback_notify(refreshed)
-        if feedback_res:
-            side_effects.append({"task_id": task_id, "feedback_notify": feedback_res})
-
-        notify_res = maybe_notify(refreshed, notify_min_interval)
-        if notify_res:
-            side_effects.append({"task_id": task_id, "notify": notify_res})
-
-    runner["last_tick"] = ts
-    runner["ticks"] = int(runner.get("ticks", 0)) + 1
-    save_json(RUNNER_STATE_FILE, runner)
-
-    payload = {"time": ts, "changed": changed, "side_effects": side_effects, "ticks": runner["ticks"]}
-    if verbose:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        print(json.dumps(changed, ensure_ascii=False))
+def maybe_feedback_notify(task, min_interval=600, min_progress_step=10):
+    notify = task.get("notify") or {}
+    if not notify.get("target"):
+        return None
+    res = call_py(FEEDBACK_NOTIFY_PY, "--task-id", task["id"], "--min-interval", str(min_interval), "--min-progress-step", str(min_progress_step), check=False)
+    return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
 
 
 def infer_done_phase(task):
@@ -259,29 +152,6 @@ def infer_done_next(task):
     return "根据新结果继续推进"
 
 
-def infer_progress(task_type, phase):
-    phase_orders = {
-        "doc": ["intake", "review_collect", "review_merge", "revise", "polish", "final_check", "report"],
-        "code": ["intake", "plan", "implement", "review", "test", "fixup", "report"],
-        "engineering": ["intake", "investigate", "execute", "verify", "iterate", "report"],
-        "general": ["intake", "execute", "verify", "report"],
-    }
-    order = phase_orders.get(task_type, phase_orders["general"])
-    total = len(order)
-    try:
-        idx = order.index(phase)
-    except ValueError:
-        idx = 0
-    current = idx + 1
-    percent = int((current / total) * 100)
-    return {
-        "percent": percent,
-        "current": current,
-        "total": total,
-        "status_text": f"当前阶段：{phase}",
-    }
-
-
 def recommend(task_type, phase, status):
     flows = {
         "doc": {
@@ -291,6 +161,7 @@ def recommend(task_type, phase, status):
             "revise": ("polish", "in_progress", "收尾润色并统一口径", "runner: doc revise -> polish"),
             "polish": ("final_check", "in_progress", "做最终检查并准备汇报", "runner: doc polish -> final_check"),
             "final_check": ("report", "in_progress", "输出变更摘要与当前结论", "runner: doc final_check -> report"),
+            "report": ("done", "done", "论文改写任务完成", "runner: doc report -> done"),
         },
         "code": {
             "intake": ("plan", "in_progress", "拆解实现路径与子任务", "runner: code intake -> plan"),
@@ -299,6 +170,7 @@ def recommend(task_type, phase, status):
             "review": ("test", "in_progress", "根据 reviewer 结果修正并测试", "runner: code review -> test"),
             "test": ("fixup", "in_progress", "处理回归问题并收尾", "runner: code test -> fixup"),
             "fixup": ("report", "in_progress", "整理结果、风险与后续项", "runner: code fixup -> report"),
+            "report": ("done", "done", "代码任务完成", "runner: code report -> done"),
         },
         "engineering": {
             "intake": ("investigate", "in_progress", "先调查现状、约束与可行路径", "runner: engineering intake -> investigate"),
@@ -306,11 +178,13 @@ def recommend(task_type, phase, status):
             "execute": ("verify", "in_progress", "验证结果并判断是否继续迭代", "runner: engineering execute -> verify"),
             "verify": ("iterate", "in_progress", "若未完成则继续下一轮推进", "runner: engineering verify -> iterate"),
             "iterate": ("report", "in_progress", "整理阶段性产出与阻塞点", "runner: engineering iterate -> report"),
+            "report": ("done", "done", "工程任务完成", "runner: engineering report -> done"),
         },
         "general": {
             "intake": ("execute", "in_progress", "进入执行阶段", "runner: general intake -> execute"),
             "execute": ("verify", "in_progress", "验证当前结果", "runner: general execute -> verify"),
             "verify": ("report", "in_progress", "整理汇报", "runner: general verify -> report"),
+            "report": ("done", "done", "任务完成", "runner: general report -> done"),
         },
     }
     flow = flows.get(task_type, {})
@@ -318,6 +192,96 @@ def recommend(task_type, phase, status):
         return None
     new_phase, new_status, next_step, log_msg = flow[phase]
     return {"phase": new_phase, "status": new_status, "next": next_step, "log": log_msg}
+
+
+def apply_recommendation(task_id, task_type, phase, status, next_value):
+    recommendation = recommend(task_type, phase, status)
+    if not recommendation:
+        return None
+    new_phase = recommendation["phase"]
+    new_status = recommendation["status"]
+    next_step = recommendation["next"]
+    log_msg = recommendation["log"]
+    if new_phase == phase and new_status == status and next_step == next_value:
+        return None
+    progress = infer_progress(task_type, new_phase)
+    call_py(TASK_PY, "update", task_id, "--status", new_status, "--phase", new_phase, "--next", next_step,
+            "--progress-percent", str(progress["percent"]), "--progress-current", str(progress["current"]),
+            "--progress-total", str(progress["total"]), "--progress-status", progress["status_text"], "--log", log_msg)
+    call_py(ACTIVE_ROLES_PY, task_id, check=False)
+    call_py(NEXT_ACTIONS_PY, task_id, check=False)
+    call_py(DISPATCH_PLAN_PY, task_id, check=False)
+    return {"task_id": task_id, "status": new_status, "phase": new_phase, "next": next_step}
+
+
+def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
+    ensure_store()
+    runner = load_json(RUNNER_STATE_FILE)
+    changed = []
+    side_effects = []
+    ts = now_iso()
+
+    allowed_ids, sched_payload = scheduled_ids(max_active=max_active)
+    if sched_payload:
+        side_effects.append({"scheduler": sched_payload})
+
+    store = load_json(TASKS_FILE)
+    for task in store.get("tasks", []):
+        task_id = task.get("id")
+        status = task.get("status")
+
+        if status in TERMINAL_STATUSES:
+            notify_res = maybe_notify(task, notify_min_interval)
+            if notify_res:
+                side_effects.append({"task_id": task_id, "notify": notify_res})
+            continue
+
+        if allowed_ids is not None and task_id not in allowed_ids and status in ACTIVE_STATUSES:
+            side_effects.append({"task_id": task_id, "skipped_by_scheduler": True})
+            continue
+
+        watch_res = ingest_watched_files(task)
+        if watch_res:
+            side_effects.append({"task_id": task_id, "watch": watch_res})
+        process_watch_res = ingest_watched_process_logs(task)
+        if process_watch_res:
+            side_effects.append({"task_id": task_id, "process_watch": process_watch_res})
+        decide_res = maybe_decide(task)
+        if decide_res:
+            side_effects.append({"task_id": task_id, "decide": decide_res})
+
+        store = load_json(TASKS_FILE)
+        refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), task)
+
+        # 核心修正：只要没进入终止/等待用户/阻塞状态，就持续推进直到不能再推进。
+        safety = 0
+        while refreshed.get("status") not in TERMINAL_STATUSES and safety < 8:
+            result = apply_recommendation(
+                refreshed["id"],
+                refreshed.get("type"),
+                refreshed.get("phase"),
+                refreshed.get("status"),
+                refreshed.get("next"),
+            )
+            if not result:
+                break
+            changed.append(result)
+            store = load_json(TASKS_FILE)
+            refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
+            safety += 1
+
+        feedback_res = maybe_feedback_notify(refreshed)
+        if feedback_res:
+            side_effects.append({"task_id": task_id, "feedback_notify": feedback_res})
+        notify_res = maybe_notify(refreshed, notify_min_interval)
+        if notify_res:
+            side_effects.append({"task_id": task_id, "notify": notify_res})
+
+    runner["last_tick"] = ts
+    runner["ticks"] = int(runner.get("ticks", 0)) + 1
+    save_json(RUNNER_STATE_FILE, runner)
+    payload = {"time": ts, "changed": changed, "side_effects": side_effects, "ticks": runner["ticks"]}
+    print(json.dumps(payload, ensure_ascii=False, indent=2) if verbose else json.dumps(changed, ensure_ascii=False))
 
 
 def daemon_loop(interval, max_ticks, verbose=False, notify_min_interval=1800, max_active=3):
@@ -333,19 +297,16 @@ def daemon_loop(interval, max_ticks, verbose=False, notify_min_interval=1800, ma
 def main():
     parser = argparse.ArgumentParser(description="studio orchestrator runner")
     sub = parser.add_subparsers(dest="command", required=True)
-
     tick = sub.add_parser("tick")
     tick.add_argument("--verbose", action="store_true")
     tick.add_argument("--notify-min-interval", type=int, default=1800)
     tick.add_argument("--max-active", type=int, default=3)
-
     daemon = sub.add_parser("daemon")
     daemon.add_argument("--interval", type=int, default=60)
     daemon.add_argument("--max-ticks", type=int, default=0)
     daemon.add_argument("--verbose", action="store_true")
     daemon.add_argument("--notify-min-interval", type=int, default=1800)
     daemon.add_argument("--max-active", type=int, default=3)
-
     args = parser.parse_args()
     if args.command == "tick":
         tick_once(verbose=args.verbose, notify_min_interval=args.notify_min_interval, max_active=args.max_active)
