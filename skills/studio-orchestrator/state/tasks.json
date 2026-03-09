@@ -6,8 +6,8 @@
       "type": "engineering",
       "goal": "把工作室模式持续推进做成通用 skill，供文档/代码/工程任务共用",
       "status": "in_progress",
-      "phase": "implement",
-      "next": "补 runner / heartbeat / session integration 设计",
+      "phase": "report",
+      "next": "整理阶段性产出与阻塞点",
       "owner": "main-agent",
       "artifacts": [
         "skills/studio-orchestrator/SKILL.md",
@@ -15,11 +15,19 @@
       ],
       "blocker": null,
       "created_at": "2026-03-09T14:55:11+08:00",
-      "updated_at": "2026-03-09T14:55:11+08:00",
+      "updated_at": "2026-03-09T14:57:56+08:00",
       "logs": [
         {
           "time": "2026-03-09T14:55:11+08:00",
           "message": "用户已确认：正式做成通用 skill"
+        },
+        {
+          "time": "2026-03-09T14:57:56+08:00",
+          "message": "已补最小 runner；准备启动 daemon 验证持续推进"
+        },
+        {
+          "time": "2026-03-09T14:57:56+08:00",
+          "message": "runner: engineering iterate -> report"
         }
       ]
     }

@@ -23,7 +23,9 @@
 ## 目录结构
 
 - `state/tasks.json`：任务注册表
+- `state/runner_state.json`：runner 心跳/轮次状态
 - `scripts/studio_task.py`：任务注册/状态变更/查看 CLI
+- `scripts/studio_runner.py`：最小持续推进 runner
 - `examples/tasks.sample.json`：示例状态文件
 
 ## 最小工作流
@@ -31,8 +33,9 @@
 1. 注册任务
 2. 标注任务类型（doc/code/engineering/general）
 3. 记录当前阶段、下一步、负责人、产物路径
-4. 每次推进后更新时间
-5. 遇到阻塞时写明阻塞原因和所需决策
+4. 启动 runner，自动把任务往下一阶段推进
+5. 每次推进后更新时间
+6. 遇到阻塞时写明阻塞原因和所需决策
 
 ## 常用命令
 
@@ -65,6 +68,18 @@ python3 skills/studio-orchestrator/scripts/studio_task.py update <task_id> \
 
 ```bash
 python3 skills/studio-orchestrator/scripts/studio_task.py log <task_id> "已取回 Qwen reviewer，开始并单"
+```
+
+执行一次 runner 推进：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_runner.py tick --verbose
+```
+
+以 daemon 方式持续推进：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_runner.py daemon --interval 60 --verbose
 ```
 
 标记阻塞：
@@ -115,9 +130,14 @@ python3 skills/studio-orchestrator/scripts/studio_task.py update <task_id> \
 
 ## 备注
 
-这是第一版骨架 skill。它先解决“任务必须被登记、可追踪、可持续推进”这个问题。
-后续可以继续接：
+这是第一版骨架 + 最小 runner。它先解决三件事：
+- 任务必须被登记
+- 任务状态可追踪
+- runner 可以把任务按默认阶段持续往下推
+
+后续还要继续接：
 - 自动轮询子进程/后台 session
 - 规则化主动汇报
 - 工作室模式统一入口
 - reviewer / agent dispatch 适配器
+- 按真实结果而不是仅按阶段模板推进
