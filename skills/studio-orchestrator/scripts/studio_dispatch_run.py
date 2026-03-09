@@ -10,6 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TASKS_FILE = os.path.join(BASE_DIR, "state", "tasks.json")
 QUEUE_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_queue.py")
 ADAPTER_PY = os.path.join(BASE_DIR, "scripts", "studio_agent_adapter.py")
+REAL_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_real.py")
 
 
 def now_iso():
@@ -63,6 +64,13 @@ def main():
         "--phase", task.get("phase") or "",
         "--instruction", current.get("instruction") or "",
     ], text=True)
+    real = subprocess.check_output([
+        sys.executable, REAL_PY,
+        "--agent", current.get("agent") or "main",
+        "--goal", task.get("goal") or "",
+        "--phase", task.get("phase") or "",
+        "--instruction", current.get("instruction") or "",
+    ], text=True)
 
     execution_record = {
         "time": now_iso(),
@@ -71,7 +79,8 @@ def main():
         "kind": current.get("kind"),
         "instruction": current.get("instruction"),
         "adapter_payload": json.loads(adapter),
-        "mode": "adapter-placeholder",
+        "real_payload": json.loads(real),
+        "mode": "adapter+real-wrapper" if json.loads(real).get('supported') else "adapter-placeholder",
     }
 
     data = load_tasks()
