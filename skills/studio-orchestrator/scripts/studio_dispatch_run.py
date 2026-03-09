@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TASKS_FILE = os.path.join(BASE_DIR, "state", "tasks.json")
 QUEUE_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_queue.py")
+ADAPTER_PY = os.path.join(BASE_DIR, "scripts", "studio_agent_adapter.py")
 
 
 def now_iso():
@@ -55,14 +56,22 @@ def main():
 
     subprocess.run([sys.executable, QUEUE_PY, "update", args.task_id, current["id"], "running"], check=True, capture_output=True, text=True)
 
-    # 这里先做最小可运行占位：生成 execution record，后续再对接真实 agent/reviewer 调用。
+    adapter = subprocess.check_output([
+        sys.executable, ADAPTER_PY,
+        "--agent", current.get("agent") or "main",
+        "--goal", task.get("goal") or "",
+        "--phase", task.get("phase") or "",
+        "--instruction", current.get("instruction") or "",
+    ], text=True)
+
     execution_record = {
         "time": now_iso(),
         "dispatch_id": current["id"],
         "agent": current.get("agent"),
         "kind": current.get("kind"),
         "instruction": current.get("instruction"),
-        "mode": "placeholder",
+        "adapter_payload": json.loads(adapter),
+        "mode": "adapter-placeholder",
     }
 
     data = load_tasks()

@@ -66,7 +66,7 @@ def render(task):
     if dispatch:
         parts.append("派工计划：" + "；".join(f"{x['agent']}[{x['kind']}/{x['status']}]" for x in dispatch[:3]))
     history = task.get("dispatch_history") or []
-    done_items = [x for x in history if x.get('status') == 'done']
+    done_items = [x for x in history if x.get('status') == 'done' and not x.get('legacy')]
     if done_items:
         parts.append("已完成派工：" + "；".join(f"{x['agent']}[{x['kind']}]" for x in done_items[:3]))
     parts.append(f"下一步：{task.get('next') or '-'}")
