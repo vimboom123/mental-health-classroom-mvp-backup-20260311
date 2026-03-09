@@ -24,6 +24,7 @@ COMPLETION_GATE_PY = os.path.join(BASE_DIR, "scripts", "studio_completion_gate.p
 TASK_PY = os.path.join(BASE_DIR, "scripts", "studio_task.py")
 SYNC_TASK_PY = os.path.join(BASE_DIR, "scripts", "studio_sync_task_state.py")
 STALL_CHECK_PY = os.path.join(BASE_DIR, "scripts", "studio_stall_check.py")
+COMPLETION_SUGGEST_PY = os.path.join(BASE_DIR, "scripts", "studio_completion_suggest.py")
 
 TERMINAL_STATUSES = {"done", "cancelled", "waiting_user", "blocked", "failed"}
 ACTIVE_STATUSES = {"queued", "in_progress", "waiting_reviewer"}
@@ -330,8 +331,12 @@ def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
             if stall_payload.get('stalled'):
                 side_effects.append({"task_id": task_id, "stalled": stall_payload})
 
-        # 若 report 阶段且 gate 已通过，补做一次 done 推进
+        # report 阶段自动补 completion suggest，再检查 gate
         if refreshed.get('phase') == 'report' and refreshed.get('status') == 'in_progress':
+            suggest_res = call_py(COMPLETION_SUGGEST_PY, task_id, check=False)
+            side_effects.append({"task_id": task_id, "completion_suggest": {"code": suggest_res.returncode, "stdout": suggest_res.stdout.strip(), "stderr": suggest_res.stderr.strip()}})
+            store = load_json(TASKS_FILE)
+            refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
             ok, gate_payload = completion_gate_ok(task_id)
             if ok:
                 result = apply_recommendation(task_id, refreshed.get('type'), refreshed.get('phase'), refreshed.get('status'), refreshed.get('next'))
@@ -340,7 +345,8 @@ def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
                     store = load_json(TASKS_FILE)
                     refreshed = next((t for t in store.get("tasks", []) if t.get("id") == task_id), refreshed)
             else:
-                side_effects.append({"task_id": task_id, "gate_wait": gate_payload})
+                missing = [x['name'] for x in gate_payload.get('checks', []) if not x.get('ok')]
+                side_effects.append({"task_id": task_id, "gate_wait": gate_payload, "missing_acceptance": missing})
 
         feedback_res = maybe_feedback_notify(refreshed)
         if feedback_res:
