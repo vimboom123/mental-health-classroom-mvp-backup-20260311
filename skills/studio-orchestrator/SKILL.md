@@ -26,6 +26,9 @@
 - `state/runner_state.json`：runner 心跳/轮次状态
 - `scripts/studio_task.py`：任务注册/状态变更/查看 CLI
 - `scripts/studio_runner.py`：最小持续推进 runner
+- `scripts/studio_watch.py`：读取外部结果文件并映射回任务状态
+- `scripts/studio_report.py`：筛出应该主动汇报的任务
+- `scripts/studio_start.py`：统一入口，创建任务并交给 runner 首轮接管
 - `examples/tasks.sample.json`：示例状态文件
 
 ## 最小工作流
@@ -80,6 +83,26 @@ python3 skills/studio-orchestrator/scripts/studio_runner.py tick --verbose
 
 ```bash
 python3 skills/studio-orchestrator/scripts/studio_runner.py daemon --interval 60 --verbose
+```
+
+统一入口启动工作室任务：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_start.py "Manuscript revision" doc "合并 reviewer 意见并持续改稿"
+```
+
+读取外部结果并映射任务状态：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_watch.py ingest <task_id> /path/to/reviewer_output.txt \
+  --on-done-phase review_merge \
+  --on-done-next "开始并单 reviewer 意见"
+```
+
+筛出应该主动汇报的任务：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_report.py
 ```
 
 标记阻塞：
@@ -137,7 +160,7 @@ python3 skills/studio-orchestrator/scripts/studio_task.py update <task_id> \
 
 后续还要继续接：
 - 自动轮询子进程/后台 session
-- 规则化主动汇报
-- 工作室模式统一入口
+- 真正把主动汇报接到消息发送层
 - reviewer / agent dispatch 适配器
 - 按真实结果而不是仅按阶段模板推进
+- 多任务优先级/资源冲突仲裁
