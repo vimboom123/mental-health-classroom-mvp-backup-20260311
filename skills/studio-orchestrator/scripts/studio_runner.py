@@ -20,6 +20,7 @@ FEEDBACK_NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_feedback_notify.p
 ACTIVE_ROLES_PY = os.path.join(BASE_DIR, "scripts", "studio_active_roles.py")
 NEXT_ACTIONS_PY = os.path.join(BASE_DIR, "scripts", "studio_next_actions.py")
 DISPATCH_PLAN_PY = os.path.join(BASE_DIR, "scripts", "studio_dispatch_plan.py")
+COMPLETION_GATE_PY = os.path.join(BASE_DIR, "scripts", "studio_completion_gate.py")
 TASK_PY = os.path.join(BASE_DIR, "scripts", "studio_task.py")
 
 TERMINAL_STATUSES = {"done", "cancelled", "waiting_user", "blocked", "failed"}
@@ -194,6 +195,14 @@ def recommend(task_type, phase, status):
     return {"phase": new_phase, "status": new_status, "next": next_step, "log": log_msg}
 
 
+def completion_gate_ok(task_id):
+    res = call_py(COMPLETION_GATE_PY, task_id, check=False)
+    if res.returncode != 0:
+        return False, {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
+    payload = json.loads(res.stdout or '{}')
+    return bool(payload.get('ok')), payload
+
+
 def apply_recommendation(task_id, task_type, phase, status, next_value):
     recommendation = recommend(task_type, phase, status)
     if not recommendation:
@@ -202,6 +211,11 @@ def apply_recommendation(task_id, task_type, phase, status, next_value):
     new_status = recommendation["status"]
     next_step = recommendation["next"]
     log_msg = recommendation["log"]
+
+    if new_status == "done":
+        ok, gate_payload = completion_gate_ok(task_id)
+        if not ok:
+            return {"task_id": task_id, "blocked_done": True, "gate": gate_payload}
     if new_phase == phase and new_status == status and next_step == next_value:
         return None
     progress = infer_progress(task_type, new_phase)
@@ -264,6 +278,9 @@ def tick_once(verbose=False, notify_min_interval=1800, max_active=3):
                 refreshed.get("next"),
             )
             if not result:
+                break
+            if result.get("blocked_done"):
+                side_effects.append(result)
                 break
             changed.append(result)
             store = load_json(TASKS_FILE)

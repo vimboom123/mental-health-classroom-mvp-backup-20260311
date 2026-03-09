@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TASKS_FILE = os.path.join(BASE_DIR, "state", "tasks.json")
+
+
+def load_tasks():
+    if not os.path.exists(TASKS_FILE):
+        return {"tasks": []}
+    with open(TASKS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def find_task(data, task_id):
+    for t in data.get("tasks", []):
+        if t.get("id") == task_id:
+            return t
+    return None
+
+
+def gate(task):
+    task_type = task.get("type")
+    phase = task.get("phase")
+    artifacts = task.get("artifacts") or []
+    logs = "\n".join(x.get("message", "") for x in task.get("logs", []))
+    dispatch = task.get("dispatch_plan") or []
+
+    checks = []
+
+    if phase != "report":
+        checks.append({"name": "phase_is_report", "ok": False, "reason": f"current phase is {phase}"})
+    else:
+        checks.append({"name": "phase_is_report", "ok": True})
+
+    if task_type == "doc":
+        has_artifact = any(str(x).endswith(".md") for x in artifacts)
+        checks.append({"name": "has_md_artifact", "ok": has_artifact, "reason": "missing markdown artifact" if not has_artifact else ""})
+        has_final_check = "final_check" in logs or "最终检查" in logs
+        checks.append({"name": "final_check_seen", "ok": has_final_check, "reason": "no final_check evidence in logs" if not has_final_check else ""})
+        review_like_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") in {"review", "second-opinion", "cn-review", "orchestration"})
+        checks.append({"name": "review_or_orchestration_done", "ok": review_like_done, "reason": "no relevant dispatch item done" if not review_like_done else ""})
+    else:
+        checks.append({"name": "generic_artifact_present", "ok": bool(artifacts), "reason": "no artifact recorded" if not artifacts else ""})
+
+    ok = all(item["ok"] for item in checks)
+    return {"ok": ok, "checks": checks}
+
+
+def main():
+    parser = argparse.ArgumentParser(description="check whether task can enter done state")
+    parser.add_argument("task_id")
+    args = parser.parse_args()
+
+    data = load_tasks()
+    task = find_task(data, args.task_id)
+    if not task:
+        raise SystemExit(f"task not found: {args.task_id}")
+    print(json.dumps(gate(task), ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()
