@@ -37,13 +37,13 @@
       "type": "doc",
       "goal": "验证统一入口 + watch + report",
       "status": "in_progress",
-      "phase": "review_merge",
-      "next": "开始并单 reviewer 意见",
+      "phase": "revise",
+      "next": "根据修改清单持续改正文",
       "owner": "main-agent",
       "artifacts": [],
       "blocker": null,
       "created_at": "2026-03-09T15:01:38+08:00",
-      "updated_at": "2026-03-09T15:01:38+08:00",
+      "updated_at": "2026-03-09T15:09:13+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:01:38+08:00",
@@ -56,6 +56,10 @@
         {
           "time": "2026-03-09T15:01:38+08:00",
           "message": "watch ingest: studio_review_done.txt => done_signal"
+        },
+        {
+          "time": "2026-03-09T15:09:13+08:00",
+          "message": "runner: doc review_merge -> revise"
         }
       ],
       "watch": [
@@ -63,6 +67,45 @@
           "time": "2026-03-09T15:01:38+08:00",
           "path": "/tmp/studio_review_done.txt",
           "classification": "done_signal"
+        }
+      ]
+    },
+    {
+      "id": "5e4608a9",
+      "title": "Process watch demo",
+      "type": "doc",
+      "goal": "验证 process/session 输出接管",
+      "status": "waiting_reviewer",
+      "phase": "review_collect",
+      "next": "等待后台 session 输出",
+      "owner": "main-agent",
+      "artifacts": [],
+      "blocker": null,
+      "created_at": "2026-03-09T15:09:13+08:00",
+      "updated_at": "2026-03-09T15:09:19+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T15:09:13+08:00",
+          "message": "studio_start: task created and handed to runner"
+        },
+        {
+          "time": "2026-03-09T15:09:13+08:00",
+          "message": "runner: doc intake -> review_collect"
+        },
+        {
+          "time": "2026-03-09T15:09:19+08:00",
+          "message": "准备接入 process watch"
+        },
+        {
+          "time": "2026-03-09T15:09:19+08:00",
+          "message": "watch ingest: process-watch-demo.log => neutral"
+        }
+      ],
+      "watch": [
+        {
+          "time": "2026-03-09T15:09:19+08:00",
+          "path": "/tmp/process-watch-demo.log",
+          "classification": "neutral"
         }
       ]
     }

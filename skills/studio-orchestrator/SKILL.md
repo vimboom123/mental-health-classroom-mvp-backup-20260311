@@ -27,6 +27,7 @@
 - `scripts/studio_task.py`：任务注册/状态变更/查看 CLI
 - `scripts/studio_runner.py`：最小持续推进 runner
 - `scripts/studio_watch.py`：读取外部结果文件并映射回任务状态
+- `scripts/studio_process_watch.py`：读取后台 session / process 输出并映射回任务状态
 - `scripts/studio_report.py`：筛出应该主动汇报的任务
 - `scripts/studio_start.py`：统一入口，创建任务并交给 runner 首轮接管
 - `examples/tasks.sample.json`：示例状态文件
@@ -95,6 +96,14 @@ python3 skills/studio-orchestrator/scripts/studio_start.py "Manuscript revision"
 
 ```bash
 python3 skills/studio-orchestrator/scripts/studio_watch.py ingest <task_id> /path/to/reviewer_output.txt \
+  --on-done-phase review_merge \
+  --on-done-next "开始并单 reviewer 意见"
+```
+
+读取后台 session / process 输出并映射任务状态：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_process_watch.py <task_id> <session_id> \
   --on-done-phase review_merge \
   --on-done-next "开始并单 reviewer 意见"
 ```
