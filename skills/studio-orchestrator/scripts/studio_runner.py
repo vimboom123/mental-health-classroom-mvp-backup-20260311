@@ -12,6 +12,7 @@ STATE_DIR = os.path.join(BASE_DIR, "state")
 TASKS_FILE = os.path.join(STATE_DIR, "tasks.json")
 RUNNER_STATE_FILE = os.path.join(STATE_DIR, "runner_state.json")
 WATCH_PY = os.path.join(BASE_DIR, "scripts", "studio_watch.py")
+PROCESS_WATCH_PY = os.path.join(BASE_DIR, "scripts", "studio_process_watch.py")
 DECIDE_PY = os.path.join(BASE_DIR, "scripts", "studio_decide.py")
 NOTIFY_PY = os.path.join(BASE_DIR, "scripts", "studio_notify.py")
 
@@ -68,6 +69,31 @@ def ingest_watched_files(task):
     return out
 
 
+def ingest_watched_process_logs(task):
+    watched = task.get("watched_process_logs") or []
+    task_id = task.get("id")
+    out = []
+    for path in watched:
+        if not os.path.exists(path):
+            continue
+        source_key = os.path.basename(path)
+        res = call_py(
+            PROCESS_WATCH_PY,
+            task_id,
+            "--log-file",
+            path,
+            "--source-key",
+            source_key,
+            "--on-done-phase",
+            infer_done_phase(task),
+            "--on-done-next",
+            infer_done_next(task),
+            check=False,
+        )
+        out.append({"path": path, "source_key": source_key, "code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()})
+    return out
+
+
 def maybe_decide(task):
     res = call_py(DECIDE_PY, task.get("id"), check=False)
     return {"code": res.returncode, "stdout": res.stdout.strip(), "stderr": res.stderr.strip()}
@@ -107,6 +133,10 @@ def tick_once(verbose=False, notify_min_interval=1800):
         watch_res = ingest_watched_files(task)
         if watch_res:
             side_effects.append({"task_id": task_id, "watch": watch_res})
+
+        process_watch_res = ingest_watched_process_logs(task)
+        if process_watch_res:
+            side_effects.append({"task_id": task_id, "process_watch": process_watch_res})
 
         decide_res = maybe_decide(task)
         if decide_res:

@@ -281,15 +281,15 @@
       "type": "engineering",
       "goal": "验证 process watch offset/去重",
       "status": "in_progress",
-      "phase": "verify",
-      "next": "开始验证后台 process 输出结果",
+      "phase": "report",
+      "next": "整理阶段性产出与阻塞点",
       "owner": "main-agent",
       "artifacts": [],
       "watched_files": [],
       "notify": null,
       "blocker": null,
       "created_at": "2026-03-09T15:20:32+08:00",
-      "updated_at": "2026-03-09T15:21:39+08:00",
+      "updated_at": "2026-03-09T15:24:05+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:20:32+08:00",
@@ -306,6 +306,14 @@
         {
           "time": "2026-03-09T15:21:39+08:00",
           "message": "process watch: demo-session => done_signal"
+        },
+        {
+          "time": "2026-03-09T15:24:04+08:00",
+          "message": "runner: engineering verify -> iterate"
+        },
+        {
+          "time": "2026-03-09T15:24:05+08:00",
+          "message": "runner: engineering iterate -> report"
         }
       ],
       "process_offsets": {
@@ -318,6 +326,55 @@
           "classification": "done_signal",
           "fingerprint": "68decc34d5416e6f0fe2a973e2adfda1811f54a719907aae7378d220251f65fc",
           "offset": 24
+        }
+      ]
+    },
+    {
+      "id": "10f98925",
+      "title": "Runner process log demo",
+      "type": "engineering",
+      "goal": "验证 runner 自动消费 process log",
+      "status": "in_progress",
+      "phase": "execute",
+      "next": "执行当前最优路径",
+      "owner": "main-agent",
+      "artifacts": [],
+      "watched_files": [],
+      "watched_process_logs": [
+        "/tmp/runner-process-watch.log"
+      ],
+      "notify": null,
+      "blocker": null,
+      "created_at": "2026-03-09T15:24:03+08:00",
+      "updated_at": "2026-03-09T15:24:05+08:00",
+      "logs": [
+        {
+          "time": "2026-03-09T15:24:03+08:00",
+          "message": "studio_start: task created and handed to runner"
+        },
+        {
+          "time": "2026-03-09T15:24:04+08:00",
+          "message": "process watch: runner-process-watch.log => done_signal"
+        },
+        {
+          "time": "2026-03-09T15:24:04+08:00",
+          "message": "runner: engineering intake -> investigate"
+        },
+        {
+          "time": "2026-03-09T15:24:05+08:00",
+          "message": "runner: engineering investigate -> execute"
+        }
+      ],
+      "process_offsets": {
+        "runner-process-watch.log": 16
+      },
+      "process_watch": [
+        {
+          "time": "2026-03-09T15:24:04+08:00",
+          "source_key": "runner-process-watch.log",
+          "classification": "done_signal",
+          "fingerprint": "e9a9f26798169da85364adfd86dddd537b3d9c7b22cd0d005fa8cfa84fa8e1a9",
+          "offset": 16
         }
       ]
     }

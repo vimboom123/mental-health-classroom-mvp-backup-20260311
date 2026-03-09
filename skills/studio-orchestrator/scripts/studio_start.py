@@ -15,6 +15,7 @@ def main():
     parser.add_argument("type", choices=["doc", "code", "engineering", "general"])
     parser.add_argument("goal")
     parser.add_argument("--watch-file", action="append")
+    parser.add_argument("--watch-process-log", action="append")
     parser.add_argument("--notify-target")
     parser.add_argument("--notify-channel", default="telegram")
     args = parser.parse_args()
@@ -42,6 +43,8 @@ def main():
     ]
     for path in args.watch_file or []:
         cmd.extend(["--watch-file", path])
+    for path in args.watch_process_log or []:
+        cmd.extend(["--watch-process-log", path])
     if args.notify_target:
         cmd.extend(["--notify-target", args.notify_target, "--notify-channel", args.notify_channel])
     task_id = subprocess.check_output(cmd, text=True).strip()

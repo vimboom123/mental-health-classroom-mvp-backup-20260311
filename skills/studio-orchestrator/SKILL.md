@@ -94,11 +94,12 @@ python3 skills/studio-orchestrator/scripts/studio_runner.py daemon --interval 60
 python3 skills/studio-orchestrator/scripts/studio_start.py "Manuscript revision" doc "合并 reviewer 意见并持续改稿"
 ```
 
-带 watch 文件和主动汇报目标启动：
+带 watch 文件 / process 日志 和主动汇报目标启动：
 
 ```bash
 python3 skills/studio-orchestrator/scripts/studio_start.py "Manuscript revision" doc "合并 reviewer 意见并持续改稿" \
   --watch-file /tmp/reviewer_output.txt \
+  --watch-process-log /tmp/reviewer_process.log \
   --notify-target 8783735951 --notify-channel telegram
 ```
 
