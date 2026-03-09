@@ -76,8 +76,8 @@
         "last_feedback_percent": 40
       },
       "scheduler": {
-        "eligible": true,
-        "score": 110,
+        "eligible": false,
+        "score": 90,
         "lastScheduledAt": "2026-03-09T16:00:24+08:00"
       },
       "notify": {
@@ -219,8 +219,8 @@
         }
       ],
       "scheduler": {
-        "eligible": true,
-        "score": 70,
+        "eligible": false,
+        "score": 50,
         "lastScheduledAt": "2026-03-09T16:00:24+08:00"
       },
       "agent_plan": [
@@ -348,8 +348,8 @@
         }
       ],
       "scheduler": {
-        "eligible": true,
-        "score": 70,
+        "eligible": false,
+        "score": 50,
         "lastScheduledAt": "2026-03-09T16:00:24+08:00"
       },
       "progress": {
@@ -444,8 +444,8 @@
         }
       ],
       "scheduler": {
-        "eligible": true,
-        "score": 70,
+        "eligible": false,
+        "score": 50,
         "lastScheduledAt": "2026-03-09T16:00:24+08:00"
       },
       "progress": {
@@ -522,8 +522,8 @@
         }
       ],
       "scheduler": {
-        "eligible": true,
-        "score": 70,
+        "eligible": false,
+        "score": 50,
         "lastScheduledAt": "2026-03-09T16:00:24+08:00"
       },
       "progress": {
@@ -598,8 +598,8 @@
         }
       ],
       "scheduler": {
-        "eligible": true,
-        "score": 70,
+        "eligible": false,
+        "score": 50,
         "lastScheduledAt": "2026-03-09T16:00:24+08:00"
       },
       "progress": {
@@ -693,8 +693,8 @@
         }
       ],
       "scheduler": {
-        "eligible": true,
-        "score": 70,
+        "eligible": false,
+        "score": 50,
         "lastScheduledAt": "2026-03-09T16:00:24+08:00"
       },
       "progress": {
@@ -714,7 +714,7 @@
       "goal": "继续推进 AI 采纳论文终稿改写并主动汇报",
       "status": "in_progress",
       "phase": "report",
-      "next": "满足完成门槛后再允许 done",
+      "next": "等待 main-agent 完成最终汇报与验收闭环",
       "owner": "main-agent",
       "artifacts": [
         "lexar/shit-template/manuscript_final.md"
@@ -727,16 +727,16 @@
       },
       "priority": 50,
       "progress": {
-        "percent": 85,
-        "current": 6,
-        "total": 7,
-        "status_text": "已并入 reviewer 关键意见：变量解释、局限性、因果表述收紧",
+        "percent": 100,
+        "current": 8,
+        "total": 8,
+        "status_text": "当前阶段：done",
         "last_feedback_ts": 1773043393.024809,
         "last_feedback_percent": 85
       },
       "blocker": null,
       "created_at": "2026-03-09T15:53:41+08:00",
-      "updated_at": "2026-03-09T16:05:06+08:00",
+      "updated_at": "2026-03-09T16:07:09+08:00",
       "logs": [
         {
           "time": "2026-03-09T15:53:41+08:00",
@@ -809,6 +809,18 @@
         {
           "time": "2026-03-09T16:05:06+08:00",
           "message": "进入 report，但需通过 completion gate 才可 done"
+        },
+        {
+          "time": "2026-03-09T16:07:08+08:00",
+          "message": "切换为后台持续运行模式"
+        },
+        {
+          "time": "2026-03-09T16:07:09+08:00",
+          "message": "runner: doc report -> done"
+        },
+        {
+          "time": "2026-03-09T16:07:09+08:00",
+          "message": "active roles refreshed for phase done"
         }
       ],
       "agent_plan": [
@@ -840,32 +852,12 @@
       ],
       "active_roles": [
         {
-          "role": "reviewer",
-          "agent": "claude-code",
-          "responsibility": "代码/文本审校、问题发现"
-        },
-        {
-          "role": "second-opinion",
-          "agent": "oracle",
-          "responsibility": "全局复盘与第二视角"
-        },
-        {
           "role": "main-agent",
           "agent": "main",
           "responsibility": "PM / 验收 / 最终汇报 / 结构统筹"
         }
       ],
       "next_actions": [
-        {
-          "role": "reviewer",
-          "agent": "claude-code",
-          "action": "交给 Claude Code 做审查、找问题、提改进"
-        },
-        {
-          "role": "second-opinion",
-          "agent": "oracle",
-          "action": "交给 Oracle 做全局复盘和第二视角审阅"
-        },
         {
           "role": "main-agent",
           "agent": "main",
@@ -875,26 +867,6 @@
       "dispatch_plan": [
         {
           "id": "c7783c41-step-1",
-          "agent": "claude-code",
-          "kind": "review",
-          "role": "reviewer",
-          "instruction": "交给 Claude Code 做审查、找问题、提改进",
-          "status": "done",
-          "updated_at": "2026-03-09T16:05:06+08:00",
-          "note": "review completed"
-        },
-        {
-          "id": "c7783c41-step-2",
-          "agent": "oracle",
-          "kind": "second-opinion",
-          "role": "second-opinion",
-          "instruction": "交给 Oracle 做全局复盘和第二视角审阅",
-          "status": "done",
-          "updated_at": "2026-03-09T16:05:06+08:00",
-          "note": "oracle completed"
-        },
-        {
-          "id": "c7783c41-step-3",
           "agent": "main",
           "kind": "orchestration",
           "role": "main-agent",
@@ -903,9 +875,14 @@
         }
       ],
       "scheduler": {
-        "eligible": true,
-        "score": 70,
-        "lastScheduledAt": "2026-03-09T16:00:24+08:00"
+        "eligible": false,
+        "score": 50,
+        "lastScheduledAt": "2026-03-09T16:07:08+08:00"
+      },
+      "runtime": {
+        "mode": "background-daemon",
+        "session_id": "glow-tidepool",
+        "started_by": "main-agent"
       }
     }
   ]

@@ -30,18 +30,23 @@ def gate(task):
 
     checks = []
 
-    if phase != "report":
-        checks.append({"name": "phase_is_report", "ok": False, "reason": f"current phase is {phase}"})
-    else:
-        checks.append({"name": "phase_is_report", "ok": True})
+    checks.append({"name": "phase_is_report", "ok": phase == "report", "reason": "current phase is not report" if phase != "report" else ""})
 
     if task_type == "doc":
         has_artifact = any(str(x).endswith(".md") for x in artifacts)
         checks.append({"name": "has_md_artifact", "ok": has_artifact, "reason": "missing markdown artifact" if not has_artifact else ""})
+
         has_final_check = "final_check" in logs or "最终检查" in logs
         checks.append({"name": "final_check_seen", "ok": has_final_check, "reason": "no final_check evidence in logs" if not has_final_check else ""})
-        review_like_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") in {"review", "second-opinion", "cn-review", "orchestration"})
-        checks.append({"name": "review_or_orchestration_done", "ok": review_like_done, "reason": "no relevant dispatch item done" if not review_like_done else ""})
+
+        review_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") in {"review", "second-opinion", "cn-review"})
+        checks.append({"name": "review_done", "ok": review_done, "reason": "no review-like dispatch done" if not review_done else ""})
+
+        orchestration_done = any(item.get("status") == "done" for item in dispatch if item.get("kind") == "orchestration")
+        checks.append({"name": "orchestration_done", "ok": orchestration_done, "reason": "main-agent orchestration not done" if not orchestration_done else ""})
+
+        final_report_evidence = ("最终汇报" in logs) or ("final report" in logs.lower()) or ("输出变更摘要" in logs)
+        checks.append({"name": "final_report_evidence", "ok": final_report_evidence, "reason": "no final report evidence in logs" if not final_report_evidence else ""})
     else:
         checks.append({"name": "generic_artifact_present", "ok": bool(artifacts), "reason": "no artifact recorded" if not artifacts else ""})
 
