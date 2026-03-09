@@ -28,7 +28,9 @@
 - `scripts/studio_runner.py`：最小持续推进 runner
 - `scripts/studio_watch.py`：读取外部结果文件并映射回任务状态
 - `scripts/studio_process_watch.py`：读取后台 session / process 输出并映射回任务状态
+- `scripts/studio_decide.py`：根据真实日志信号决定下一步，而不是只按 phase 模板推进
 - `scripts/studio_report.py`：筛出应该主动汇报的任务
+- `scripts/studio_notify.py`：把可汇报任务真正发到消息层
 - `scripts/studio_start.py`：统一入口，创建任务并交给 runner 首轮接管
 - `examples/tasks.sample.json`：示例状态文件
 
@@ -108,10 +110,22 @@ python3 skills/studio-orchestrator/scripts/studio_process_watch.py <task_id> <se
   --on-done-next "开始并单 reviewer 意见"
 ```
 
+根据真实日志信号做决策：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_decide.py <task_id>
+```
+
 筛出应该主动汇报的任务：
 
 ```bash
 python3 skills/studio-orchestrator/scripts/studio_report.py
+```
+
+真正发出主动汇报：
+
+```bash
+python3 skills/studio-orchestrator/scripts/studio_notify.py --target 8783735951 --channel telegram
 ```
 
 标记阻塞：

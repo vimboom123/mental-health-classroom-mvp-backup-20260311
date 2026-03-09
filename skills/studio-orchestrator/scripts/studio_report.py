@@ -20,6 +20,12 @@ def load_tasks():
         return json.load(f)
 
 
+def save_tasks(data):
+    with open(TASKS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
 def find_task(data, task_id):
     for task in data.get("tasks", []):
         if task.get("id") == task_id:
@@ -48,10 +54,16 @@ def render(task):
     return "\n".join(bits)
 
 
+def mark_reported(task):
+    task["last_report_ts"] = now_ts()
+
+
 def main():
     parser = argparse.ArgumentParser(description="render report-worthy studio tasks")
     parser.add_argument("--task-id")
     parser.add_argument("--min-interval", type=int, default=1800)
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--mark-reported", action="store_true")
     args = parser.parse_args()
 
     data = load_tasks()
@@ -61,16 +73,36 @@ def main():
         tasks = [task] if task else []
 
     reportable = []
+    touched = False
     for task in tasks:
         if not task:
             continue
+        eligible = False
         if task.get("status") in {"blocked", "waiting_user"}:
-            reportable.append(render(task))
+            eligible = True
+        elif task.get("phase") == "report" and should_report(task, args.min_interval):
+            eligible = True
+        if not eligible:
             continue
-        if task.get("phase") == "report" and should_report(task, args.min_interval):
-            reportable.append(render(task))
+        payload = {
+            "task_id": task.get("id"),
+            "title": task.get("title"),
+            "text": render(task),
+            "status": task.get("status"),
+            "phase": task.get("phase"),
+        }
+        reportable.append(payload)
+        if args.mark_reported:
+            mark_reported(task)
+            touched = True
 
-    print("\n\n".join(reportable))
+    if touched:
+        save_tasks(data)
+
+    if args.json:
+        print(json.dumps(reportable, ensure_ascii=False, indent=2))
+    else:
+        print("\n\n".join(x["text"] for x in reportable))
 
 
 if __name__ == "__main__":
