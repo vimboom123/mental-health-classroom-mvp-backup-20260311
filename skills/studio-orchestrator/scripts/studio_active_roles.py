@@ -18,6 +18,8 @@ PHASE_ROLE_MAP = {
         "polish": ["writer", "cn-reviewer"],
         "final_check": ["reviewer", "second-opinion", "main-agent"],
         "report": ["main-agent", "second-opinion", "cn-reviewer"],
+        "final_summary": ["main-agent", "writer"],
+        "pm_wrapup": ["main-agent"],
     },
     "code": {
         "intake": ["main-agent"],
@@ -27,6 +29,8 @@ PHASE_ROLE_MAP = {
         "test": ["main-agent", "implementer"],
         "fixup": ["implementer", "reviewer"],
         "report": ["main-agent", "second-opinion", "cn-reviewer"],
+        "final_summary": ["main-agent", "frontend"],
+        "pm_wrapup": ["main-agent"],
     },
     "engineering": {
         "intake": ["main-agent"],
@@ -35,12 +39,16 @@ PHASE_ROLE_MAP = {
         "verify": ["reviewer", "main-agent"],
         "iterate": ["executor", "reviewer"],
         "report": ["main-agent", "second-opinion", "cn-reviewer"],
+        "final_summary": ["main-agent", "surface"],
+        "pm_wrapup": ["main-agent"],
     },
     "general": {
         "intake": ["main-agent"],
         "execute": ["main-agent"],
         "verify": ["main-agent"],
         "report": ["main-agent"],
+        "final_summary": ["main-agent"],
+        "pm_wrapup": ["main-agent"],
     },
 }
 
@@ -70,6 +78,23 @@ def find_task(data, task_id):
 
 
 def compute_active_roles(task):
+    # Highest priority: explicit PM-driven dispatch judgment / active roles for this round
+    explicit = task.get('pm_active_roles') or task.get('active_switches') or []
+    if explicit:
+        normalized = []
+        for item in explicit:
+            if not isinstance(item, dict):
+                continue
+            normalized.append({
+                'role': item.get('role'),
+                'agent': item.get('agent'),
+                'responsibility': item.get('responsibility') or item.get('reason') or '',
+                'switch': item.get('switch'),
+                'required': item.get('required'),
+            })
+        if normalized:
+            return normalized
+
     task_type = task.get("type") or "general"
     phase = task.get("phase") or "intake"
     if task_type == 'doc' and task.get('mode') == 'review_only':
@@ -78,6 +103,8 @@ def compute_active_roles(task):
             'review_collect': ['reviewer', 'second-opinion', 'cn-reviewer'],
             'review_merge': ['main-agent'],
             'report': ['main-agent', 'second-opinion', 'cn-reviewer'],
+            'final_summary': ['main-agent', 'writer'],
+            'pm_wrapup': ['main-agent'],
         }
         role_names = review_only_map.get(phase, ['main-agent'])
     else:
