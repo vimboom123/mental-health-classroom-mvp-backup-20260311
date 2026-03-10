@@ -591,6 +591,23 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
                             'stderr': res.stderr.strip(),
                         },
                     })
+    else:
+        latest = load_tasks()
+        retried = False
+        for task in latest.get('tasks', []):
+            if pending_events(task):
+                retried = True
+                res = maybe_send_notifications(task.get('id'))
+                side_effects.append({
+                    'task_id': task.get('id'),
+                    'notify_retry': {
+                        'code': res.returncode,
+                        'stdout': res.stdout.strip(),
+                        'stderr': res.stderr.strip(),
+                    },
+                })
+        if retried:
+            changed.append({'notify_retry': True})
     state = load_json(RUNNER_STATE_FILE, {'last_tick': None, 'ticks': 0})
     state['last_tick'] = now
     state['ticks'] = int(state.get('ticks', 0)) + 1
