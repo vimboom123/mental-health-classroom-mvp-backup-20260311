@@ -75,10 +75,10 @@ def main():
         if not task:
             raise SystemExit(f"task not found: {args.task_id}")
 
+        task_type = args.type or task.get("type") or "general"
         if task.get('lock_agent_plan'):
             plan = task.get('agent_plan') or []
         else:
-            task_type = args.type or task.get("type") or "general"
             plan = DEFAULT_PLANS.get(task_type, DEFAULT_PLANS["general"])
             task["agent_plan"] = plan
         task.setdefault("logs", []).append({
