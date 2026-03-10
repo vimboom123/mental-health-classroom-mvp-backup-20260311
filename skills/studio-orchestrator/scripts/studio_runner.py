@@ -359,6 +359,36 @@ def phase_ready(task):
     return True
 
 
+def phase_summary_text(completion, phase, *, legacy_keys=()):
+    phase_summaries = completion.get('phase_summaries') or {}
+    text = (phase_summaries.get(phase) or '').strip()
+    if text:
+        return text
+    for key in legacy_keys:
+        text = (completion.get(key) or '').strip()
+        if text:
+            return text
+    if phase == 'final_summary' and completion.get('summary_phase') == 'final_summary':
+        text = (completion.get('summary') or '').strip()
+        if text:
+            return text
+    return ''
+
+
+def phase_transition_gate(task):
+    phase = task.get('phase')
+    completion = task.get('completion_evidence') or {}
+    if phase == 'report':
+        if phase_summary_text(completion, 'report', legacy_keys=('internal_report',)):
+            return {'ok': True}
+        return {'ok': False, 'reason': 'report phase missing internal report text'}
+    if phase == 'final_summary':
+        if phase_summary_text(completion, 'final_summary', legacy_keys=('final_summary',)):
+            return {'ok': True}
+        return {'ok': False, 'reason': 'final_summary phase missing user-facing summary'}
+    return {'ok': True}
+
+
 def maybe_queue_phase(task_id):
     data, task = load_task(task_id)
     if not task:
@@ -408,6 +438,8 @@ def sync_project_state(task_id, *, force_notion=False):
 
 
 def advance_task(task):
+    if (task.get('task_scope') or 'execution_run') == 'project_base':
+        return None
     task_type = 'doc_review_only' if task.get('type') == 'doc' and task.get('mode') == 'review_only' else (task.get('type') or 'general')
     phase = task.get('phase') or 'intake'
     flow = RECOMMENDATIONS.get(task_type, RECOMMENDATIONS['general'])
@@ -452,7 +484,7 @@ def maybe_complete_pm_wrapup(task):
             '--log', 'runner: acceptance gate satisfied -> done',
         )
         refresh_supporting_state(task['id'])
-    return {'suggest': suggest_res, 'gate': gate_res}
+    return {'suggest': suggest_res, 'gate': gate_res, 'gate_payload': gate_payload}
 
 
 def maybe_block_missing(task):
@@ -542,12 +574,25 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
 
         if task.get('phase') == 'pm_wrapup' and phase_ready(task):
             completion_res = maybe_complete_pm_wrapup(task)
-            side_effects.append({'task_id': task_id, 'completion': {'suggest': completion_res['suggest'].stdout.strip(), 'gate': completion_res['gate'].stdout.strip()}})
+            completion_side_effect = {'suggest': completion_res['suggest'].stdout.strip(), 'gate': completion_res['gate'].stdout.strip()}
+            if not completion_res['gate_payload'].get('ok'):
+                missing = [item.get('reason') for item in completion_res['gate_payload'].get('checks', []) if not item.get('ok') and item.get('reason')]
+                if missing:
+                    completion_side_effect['missing'] = missing
+            side_effects.append({'task_id': task_id, 'completion': completion_side_effect})
             sync_res = sync_project_state(task_id, force_notion=True)
             side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
             notify_task_ids.add(task_id)
             continue
         if phase_ready(task):
+            transition_gate = phase_transition_gate(task)
+            if not transition_gate.get('ok'):
+                side_effects.append({'task_id': task_id, 'phase_hold': transition_gate})
+                sync_res = sync_project_state(task_id)
+                side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
+                if pending_events(task):
+                    notify_task_ids.add(task_id)
+                continue
             res = advance_task(task)
             if res is not None:
                 changed.append({'task_id': task_id, 'advanced_from': task.get('phase')})
@@ -571,7 +616,12 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
 
         if task.get('phase') == 'pm_wrapup' and phase_ready(task):
             completion_res = maybe_complete_pm_wrapup(task)
-            side_effects.append({'task_id': task_id, 'completion': {'suggest': completion_res['suggest'].stdout.strip(), 'gate': completion_res['gate'].stdout.strip()}})
+            completion_side_effect = {'suggest': completion_res['suggest'].stdout.strip(), 'gate': completion_res['gate'].stdout.strip()}
+            if not completion_res['gate_payload'].get('ok'):
+                missing = [item.get('reason') for item in completion_res['gate_payload'].get('checks', []) if not item.get('ok') and item.get('reason')]
+                if missing:
+                    completion_side_effect['missing'] = missing
+            side_effects.append({'task_id': task_id, 'completion': completion_side_effect})
             data, task = load_task(task_id)
             if not task:
                 continue
@@ -579,6 +629,14 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
             side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
             notify_task_ids.add(task_id)
         elif phase_ready(task):
+            transition_gate = phase_transition_gate(task)
+            if not transition_gate.get('ok'):
+                side_effects.append({'task_id': task_id, 'phase_hold': transition_gate})
+                sync_res = sync_project_state(task_id)
+                side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
+                if pending_events(task):
+                    notify_task_ids.add(task_id)
+                continue
             res = advance_task(task)
             if res is not None:
                 changed.append({'task_id': task_id, 'advanced_from': task.get('phase')})

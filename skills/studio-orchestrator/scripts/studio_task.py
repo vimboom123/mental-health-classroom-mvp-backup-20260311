@@ -84,6 +84,7 @@ def cmd_create(args: argparse.Namespace) -> None:
             "id": task_id,
             "title": args.title,
             "type": args.type,
+            "task_scope": args.task_scope,
             "goal": args.goal,
             "status": args.status,
             "phase": args.phase,
@@ -251,6 +252,7 @@ def cmd_update(args: argparse.Namespace) -> None:
             ("next", args.next_step),
             ("owner", args.owner),
             ("blocker", args.blocker),
+            ("task_scope", getattr(args, 'task_scope', None)),
         ]:
             if value is not None:
                 task[field] = value
@@ -329,6 +331,7 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--title", required=True)
     c.add_argument("--project-name")
     c.add_argument("--type", required=True, choices=["doc", "code", "engineering", "general"])
+    c.add_argument("--task-scope", choices=["execution_run", "project_base"], default="execution_run")
     c.add_argument("--mode", choices=["default", "review_only"], default="default")
     c.add_argument("--goal", required=True)
     c.add_argument("--status", default="queued", choices=sorted(VALID_STATUS))
@@ -366,6 +369,7 @@ def build_parser() -> argparse.ArgumentParser:
     u.add_argument("task_id")
     u.add_argument("--status", choices=sorted(VALID_STATUS))
     u.add_argument("--phase")
+    u.add_argument("--task-scope", choices=["execution_run", "project_base"])
     u.add_argument("--project-name")
     u.add_argument("--next", dest="next_step")
     u.add_argument("--owner")
