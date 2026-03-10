@@ -14,14 +14,12 @@
 - 开发拆工与验收
 
 ### B. 优化方向（先保留，但不阻塞第一版）
-这部分可以作为：
-- 后续增强
-- 体验优化
-- 更精细的安全与交互拓展
+这部分放入 `optimization/` 文件夹，并按不同优化方向分组。
 
 原则：
 - 第一版先做能用的
 - 细化材料不删，但降级为后续参考
+- 主线和优化方向物理分开，避免混在一起
 
 ---
 
@@ -60,7 +58,7 @@
 
 ---
 
-## 三、优化方向（P1 / P2）
+## 三、优化方向（`optimization/`）
 
 ### 1. 页面与结构优化类
 #### `website-priority-wireframe-mvp-v1.md`
@@ -71,27 +69,29 @@
 
 ---
 
-### 2. 助教风险增强类
-以下文档都保留，但归为“优化与增强方向”，不作为第一版开发阻塞：
-
+### 2. `optimization/risk-safety/`
+更细的助教安全与风险边界增强材料：
 - `tutor-risk-dialogue-examples-v1.md`
-- `tutor-risk-test-cases-v1.md`
-- `tutor-risk-prompt-eval-sheet-v1.md`
 - `tutor-risk-edge-cases-v1.md`
-- `tutor-risk-test-library-v1.json`
-- `tutor-risk-test-library-v1.md`
+
+---
+
+### 3. `optimization/interaction-ui/`
+更细的交互、组件状态、风险态 UI 与事件流材料：
 - `tutor-risk-ui-mapping-v1.md`
 - `tutor-risk-component-state-table-v1.md`
 - `tutor-risk-ui-config-v1.md`
 - `tutor-risk-state-wireframes-v1.md`
 - `tutor-risk-event-flow-v1.md`
 
-这批文档的定位：
-- 后续助教安全增强
-- 前端精细交互增强
-- Prompt 测试与回归增强
+---
 
-不是第一版功能闭环的先决条件。
+### 4. `optimization/testing-eval/`
+更细的测试、Prompt 验收与风险样本库：
+- `tutor-risk-test-cases-v1.md`
+- `tutor-risk-prompt-eval-sheet-v1.md`
+- `tutor-risk-test-library-v1.md`
+- `tutor-risk-test-library-v1.json`
 
 ---
 
@@ -120,7 +120,7 @@
 - 助教基础可用
 - 1~2 个练习页
 
-其他更精细的文档一律视为：
+其他更精细的文档一律放到 `optimization/` 下，视为：
 - 后续优化材料
 - 增强方向
 - 暂不阻塞第一版开发
