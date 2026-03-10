@@ -274,10 +274,16 @@ def completion_summary(task: Dict[str, Any]) -> str:
 
 
 def replacement_note(task: Dict[str, Any]) -> str:
+    links = []
+    if task.get('parent_task_id'):
+        links.append(f"parent_task_id={task.get('parent_task_id')}")
+    child_ids = task.get('child_task_ids') or []
+    if child_ids:
+        links.append('child_task_ids=' + ','.join(child_ids[:12]))
     for key in ('superseded_by', 'replacement_task_id', 'replacement_project', 'replaced_by'):
         if task.get(key):
-            return short_text(f'{key}={task.get(key)}')
-    return ''
+            links.append(f'{key}={task.get(key)}')
+    return short_text(' | '.join(links))
 
 
 def sync_source(task: Dict[str, Any]) -> str:

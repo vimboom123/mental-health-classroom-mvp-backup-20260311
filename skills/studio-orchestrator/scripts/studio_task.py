@@ -85,6 +85,8 @@ def cmd_create(args: argparse.Namespace) -> None:
             "title": args.title,
             "type": args.type,
             "task_scope": args.task_scope,
+            "parent_task_id": args.parent_task_id,
+            "child_task_ids": [],
             "goal": args.goal,
             "status": args.status,
             "phase": args.phase,
@@ -122,6 +124,12 @@ def cmd_create(args: argparse.Namespace) -> None:
         }
         if args.project_name:
             task["project"] = {"name": args.project_name}
+        if args.parent_task_id:
+            parent = find_task(data, args.parent_task_id)
+            if parent:
+                children = parent.setdefault('child_task_ids', [])
+                if task_id not in children:
+                    children.append(task_id)
         maybe_log(task, args.log or "task created", ts=ts)
         ensure_studio_metadata(task)
         if args.project_name:
@@ -253,6 +261,7 @@ def cmd_update(args: argparse.Namespace) -> None:
             ("owner", args.owner),
             ("blocker", args.blocker),
             ("task_scope", getattr(args, 'task_scope', None)),
+            ("parent_task_id", getattr(args, 'parent_task_id', None)),
         ]:
             if value is not None:
                 task[field] = value
@@ -330,6 +339,7 @@ def build_parser() -> argparse.ArgumentParser:
     c = sub.add_parser("create")
     c.add_argument("--title", required=True)
     c.add_argument("--project-name")
+    c.add_argument("--parent-task-id")
     c.add_argument("--type", required=True, choices=["doc", "code", "engineering", "general"])
     c.add_argument("--task-scope", choices=["execution_run", "project_base"], default="execution_run")
     c.add_argument("--mode", choices=["default", "review_only"], default="default")
@@ -370,6 +380,7 @@ def build_parser() -> argparse.ArgumentParser:
     u.add_argument("--status", choices=sorted(VALID_STATUS))
     u.add_argument("--phase")
     u.add_argument("--task-scope", choices=["execution_run", "project_base"])
+    u.add_argument("--parent-task-id")
     u.add_argument("--project-name")
     u.add_argument("--next", dest="next_step")
     u.add_argument("--owner")

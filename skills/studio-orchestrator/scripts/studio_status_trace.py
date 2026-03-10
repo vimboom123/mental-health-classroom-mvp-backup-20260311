@@ -74,6 +74,8 @@ def render(task: Dict) -> str:
         f"- 标题: {task.get('title')}",
         f"- 类型: {task.get('type')}",
         f"- 任务层级: {task_scope}",
+        f"- 上级任务: {task.get('parent_task_id') or '-'}",
+        f"- 下级任务: {', '.join(task.get('child_task_ids') or []) or '-'}",
         f"- 目标: {task.get('goal')}",
         f"- 阶段: {task.get('phase')} | 状态: {task.get('status')}",
         f"- 下一步: {task.get('next') or '-'}",
