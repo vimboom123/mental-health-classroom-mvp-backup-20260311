@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 from datetime import datetime, timezone
+from studio_common import task_state_lock
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_DIR = os.path.join(BASE_DIR, "state")
@@ -68,19 +69,23 @@ def main():
     parser.add_argument("--type")
     args = parser.parse_args()
 
-    data = load_tasks()
-    task = find_task(data, args.task_id)
-    if not task:
-        raise SystemExit(f"task not found: {args.task_id}")
+    with task_state_lock():
+        data = load_tasks()
+        task = find_task(data, args.task_id)
+        if not task:
+            raise SystemExit(f"task not found: {args.task_id}")
 
-    task_type = args.type or task.get("type") or "general"
-    plan = DEFAULT_PLANS.get(task_type, DEFAULT_PLANS["general"])
-    task["agent_plan"] = plan
-    task.setdefault("logs", []).append({
-        "time": now_iso(),
-        "message": f"roles assigned for task type {task_type}",
-    })
-    save_tasks(data)
+        if task.get('lock_agent_plan'):
+            plan = task.get('agent_plan') or []
+        else:
+            task_type = args.type or task.get("type") or "general"
+            plan = DEFAULT_PLANS.get(task_type, DEFAULT_PLANS["general"])
+            task["agent_plan"] = plan
+        task.setdefault("logs", []).append({
+            "time": now_iso(),
+            "message": f"roles assigned for task type {task_type}",
+        })
+        save_tasks(data)
     print(json.dumps({"task_id": task["id"], "agent_plan": plan}, ensure_ascii=False, indent=2))
 
 
