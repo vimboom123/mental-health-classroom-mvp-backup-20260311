@@ -43,6 +43,8 @@ def decide(task):
         return None
 
     if any(k in joined for k in ["done_signal", "review complete", "已完成", "完成了"]):
+        if task.get("type") == "doc" and task.get("mode") == "review_only" and phase in {"review_collect", "review_merge"}:
+            return {"phase": "report", "status": "in_progress", "next": "输出审稿结论与修改建议", "reason": "done-signal found in recent logs (review_only)"}
         if task.get("type") == "doc" and phase in {"review_collect", "review_merge"}:
             return {"phase": "revise", "status": "in_progress", "next": "根据 reviewer 结果直接改正文", "reason": "done-signal found in recent logs"}
         if task.get("type") == "code" and phase in {"review", "implement"}:
