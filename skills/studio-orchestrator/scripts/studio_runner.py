@@ -58,11 +58,11 @@ TERMINAL_STATUSES = {'done', 'cancelled', 'waiting_user', 'blocked', 'failed'}
 ACTIVE_STATUSES = {'queued', 'in_progress', 'waiting_reviewer'}
 TERMINAL_DISPATCH = {'done', 'failed'}
 PROGRESS_ORDERS = {
-    'doc': ['intake', 'review_collect', 'review_merge', 'revise', 'polish', 'final_check', 'report', 'done'],
-    'doc_review_only': ['intake', 'review_collect', 'review_merge', 'report', 'done'],
-    'code': ['intake', 'plan', 'implement', 'review', 'test', 'fixup', 'report', 'done'],
-    'engineering': ['intake', 'investigate', 'execute', 'verify', 'iterate', 'report', 'done'],
-    'general': ['intake', 'execute', 'verify', 'report', 'done'],
+    'doc': ['intake', 'review_collect', 'review_merge', 'revise', 'polish', 'final_check', 'report', 'final_summary', 'pm_wrapup', 'done'],
+    'doc_review_only': ['intake', 'review_collect', 'review_merge', 'report', 'final_summary', 'pm_wrapup', 'done'],
+    'code': ['intake', 'plan', 'implement', 'review', 'test', 'fixup', 'report', 'final_summary', 'pm_wrapup', 'done'],
+    'engineering': ['intake', 'investigate', 'execute', 'verify', 'iterate', 'report', 'final_summary', 'pm_wrapup', 'done'],
+    'general': ['intake', 'execute', 'verify', 'report', 'final_summary', 'pm_wrapup', 'done'],
 }
 RECOMMENDATIONS = {
     'doc': {
@@ -71,14 +71,18 @@ RECOMMENDATIONS = {
         'review_merge': ('revise', 'in_progress', '根据修改清单持续改正文', 'runner: doc review_merge -> revise'),
         'revise': ('polish', 'in_progress', '收尾润色并统一口径', 'runner: doc revise -> polish'),
         'polish': ('final_check', 'in_progress', '做最终检查并准备汇报', 'runner: doc polish -> final_check'),
-        'final_check': ('report', 'in_progress', '输出变更摘要与当前结论', 'runner: doc final_check -> report'),
-        'report': ('done', 'done', '文档任务完成', 'runner: doc report -> done'),
+        'final_check': ('report', 'in_progress', '整理内部汇总、证据与遗留风险', 'runner: doc final_check -> report'),
+        'report': ('final_summary', 'in_progress', '产出最终总汇报草案并收口用户口径', 'runner: doc report -> final_summary'),
+        'final_summary': ('pm_wrapup', 'in_progress', '完成 PM wrapup、验收与结项检查', 'runner: doc final_summary -> pm_wrapup'),
+        'pm_wrapup': ('done', 'done', '文档任务完成', 'runner: doc pm_wrapup -> done'),
     },
     'doc_review_only': {
         'intake': ('review_collect', 'waiting_reviewer', '等待 reviewer / 子代理结果回流', 'runner: doc(review_only) intake -> review_collect'),
         'review_collect': ('review_merge', 'in_progress', '并单 reviewer 意见，生成审稿结论', 'runner: doc(review_only) review_collect -> review_merge'),
-        'review_merge': ('report', 'in_progress', '输出审稿结论与修改建议，不自动进入改稿', 'runner: doc(review_only) review_merge -> report'),
-        'report': ('done', 'done', '审稿任务完成', 'runner: doc(review_only) report -> done'),
+        'review_merge': ('report', 'in_progress', '整理内部审稿结论与证据，不自动进入改稿', 'runner: doc(review_only) review_merge -> report'),
+        'report': ('final_summary', 'in_progress', '输出最终总汇报与用户可读结论', 'runner: doc(review_only) report -> final_summary'),
+        'final_summary': ('pm_wrapup', 'in_progress', '完成 PM wrapup、验收与结项检查', 'runner: doc(review_only) final_summary -> pm_wrapup'),
+        'pm_wrapup': ('done', 'done', '审稿任务完成', 'runner: doc(review_only) pm_wrapup -> done'),
     },
     'code': {
         'intake': ('plan', 'in_progress', '拆解实现路径与子任务', 'runner: code intake -> plan'),
@@ -86,22 +90,28 @@ RECOMMENDATIONS = {
         'implement': ('review', 'waiting_reviewer', '等待 reviewer / 审阅结果返回', 'runner: code implement -> review'),
         'review': ('test', 'in_progress', '根据 reviewer 结果进入测试', 'runner: code review -> test'),
         'test': ('fixup', 'in_progress', '处理测试问题并收尾', 'runner: code test -> fixup'),
-        'fixup': ('report', 'in_progress', '整理结果、风险与后续项', 'runner: code fixup -> report'),
-        'report': ('done', 'done', '代码任务完成', 'runner: code report -> done'),
+        'fixup': ('report', 'in_progress', '整理内部结果、风险与后续项', 'runner: code fixup -> report'),
+        'report': ('final_summary', 'in_progress', '产出最终总汇报草案并收口用户口径', 'runner: code report -> final_summary'),
+        'final_summary': ('pm_wrapup', 'in_progress', '完成 PM wrapup、验收与结项检查', 'runner: code final_summary -> pm_wrapup'),
+        'pm_wrapup': ('done', 'done', '代码任务完成', 'runner: code pm_wrapup -> done'),
     },
     'engineering': {
         'intake': ('investigate', 'in_progress', '先调查现状、约束与可行路径', 'runner: engineering intake -> investigate'),
         'investigate': ('execute', 'in_progress', '执行当前最优路径', 'runner: engineering investigate -> execute'),
         'execute': ('verify', 'in_progress', '验证结果并判断是否继续迭代', 'runner: engineering execute -> verify'),
         'verify': ('iterate', 'in_progress', '若未完成则继续下一轮推进', 'runner: engineering verify -> iterate'),
-        'iterate': ('report', 'in_progress', '整理阶段性产出与阻塞点', 'runner: engineering iterate -> report'),
-        'report': ('done', 'done', '工程任务完成', 'runner: engineering report -> done'),
+        'iterate': ('report', 'in_progress', '整理内部阶段产出、阻塞与判断', 'runner: engineering iterate -> report'),
+        'report': ('final_summary', 'in_progress', '产出最终总汇报草案并收口用户口径', 'runner: engineering report -> final_summary'),
+        'final_summary': ('pm_wrapup', 'in_progress', '完成 PM wrapup、验收与结项检查', 'runner: engineering final_summary -> pm_wrapup'),
+        'pm_wrapup': ('done', 'done', '工程任务完成', 'runner: engineering pm_wrapup -> done'),
     },
     'general': {
         'intake': ('execute', 'in_progress', '进入执行阶段', 'runner: general intake -> execute'),
         'execute': ('verify', 'in_progress', '验证当前结果', 'runner: general execute -> verify'),
-        'verify': ('report', 'in_progress', '整理汇报', 'runner: general verify -> report'),
-        'report': ('done', 'done', '任务完成', 'runner: general report -> done'),
+        'verify': ('report', 'in_progress', '整理内部汇总', 'runner: general verify -> report'),
+        'report': ('final_summary', 'in_progress', '产出最终总汇报草案', 'runner: general report -> final_summary'),
+        'final_summary': ('pm_wrapup', 'in_progress', '完成 PM wrapup、验收与结项检查', 'runner: general final_summary -> pm_wrapup'),
+        'pm_wrapup': ('done', 'done', '任务完成', 'runner: general pm_wrapup -> done'),
     },
 }
 
@@ -420,7 +430,7 @@ def advance_task(task):
     return res
 
 
-def maybe_complete_report(task):
+def maybe_complete_pm_wrapup(task):
     suggest_res = call_py(COMPLETION_SUGGEST_PY, task['id'], check=False)
     gate_res = call_py(COMPLETION_GATE_PY, task['id'], check=False)
     try:
@@ -516,8 +526,22 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
         if not task:
             continue
 
-        if task.get('phase') == 'report' and phase_ready(task):
-            completion_res = maybe_complete_report(task)
+        queue_res = maybe_queue_phase(task_id)
+        if queue_res:
+            side_effects.append({'task_id': task_id, 'dispatch_queue': {'code': queue_res.returncode, 'stdout': queue_res.stdout.strip(), 'stderr': queue_res.stderr.strip()}})
+        launch_res_list = maybe_launch_queued(task_id)
+        for res in launch_res_list:
+            side_effects.append({'task_id': task_id, 'dispatch_launch': {'code': res.returncode, 'stdout': res.stdout.strip(), 'stderr': res.stderr.strip()}})
+        poll_res_list = maybe_poll_running(task_id)
+        for res in poll_res_list:
+            side_effects.append({'task_id': task_id, 'dispatch_poll': {'code': res.returncode, 'stdout': res.stdout.strip(), 'stderr': res.stderr.strip()}})
+
+        data, task = load_task(task_id)
+        if not task:
+            continue
+
+        if task.get('phase') == 'pm_wrapup' and phase_ready(task):
+            completion_res = maybe_complete_pm_wrapup(task)
             side_effects.append({'task_id': task_id, 'completion': {'suggest': completion_res['suggest'].stdout.strip(), 'gate': completion_res['gate'].stdout.strip()}})
             sync_res = sync_project_state(task_id, force_notion=True)
             side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
@@ -533,16 +557,6 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
             notify_task_ids.add(task_id)
             continue
 
-        queue_res = maybe_queue_phase(task_id)
-        if queue_res:
-            side_effects.append({'task_id': task_id, 'dispatch_queue': {'code': queue_res.returncode, 'stdout': queue_res.stdout.strip(), 'stderr': queue_res.stderr.strip()}})
-        launch_res_list = maybe_launch_queued(task_id)
-        for res in launch_res_list:
-            side_effects.append({'task_id': task_id, 'dispatch_launch': {'code': res.returncode, 'stdout': res.stdout.strip(), 'stderr': res.stderr.strip()}})
-        poll_res_list = maybe_poll_running(task_id)
-        for res in poll_res_list:
-            side_effects.append({'task_id': task_id, 'dispatch_poll': {'code': res.returncode, 'stdout': res.stdout.strip(), 'stderr': res.stderr.strip()}})
-
         data, task = load_task(task_id)
         if not task:
             continue
@@ -555,8 +569,8 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
             if stall_payload.get('stalled'):
                 side_effects.append({'task_id': task_id, 'stalled': stall_payload})
 
-        if task.get('phase') == 'report' and phase_ready(task):
-            completion_res = maybe_complete_report(task)
+        if task.get('phase') == 'pm_wrapup' and phase_ready(task):
+            completion_res = maybe_complete_pm_wrapup(task)
             side_effects.append({'task_id': task_id, 'completion': {'suggest': completion_res['suggest'].stdout.strip(), 'gate': completion_res['gate'].stdout.strip()}})
             data, task = load_task(task_id)
             if not task:
