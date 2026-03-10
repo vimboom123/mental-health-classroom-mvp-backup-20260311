@@ -31,7 +31,16 @@ def sync(task):
     progress = task.setdefault("progress", {})
     phase = task.get("phase")
     status = task.get("status")
+    task_scope = task.get('task_scope') or 'execution_run'
     changed = []
+
+    if task_scope == 'project_base' and status == 'done':
+        task['status'] = 'in_progress'
+        task['phase'] = 'execute'
+        progress['percent'] = min(progress.get('percent', 80), 90) or 80
+        progress['status_text'] = '当前阶段：execute'
+        changed.extend(['status done->in_progress (project_base)', 'phase done->execute (project_base)'])
+        return changed
 
     if status == "done":
         if phase != "done":
@@ -42,8 +51,8 @@ def sync(task):
         changed.append("progress->100")
     else:
         if phase == "done":
-            task["phase"] = "report"
-            changed.append("phase done->report")
+            task["phase"] = "pm_wrapup"
+            changed.append("phase done->pm_wrapup")
         if progress.get("percent", 0) >= 100:
             progress["percent"] = 90
             changed.append("progress 100->90")
