@@ -157,7 +157,10 @@ def priority_name(task: Dict[str, Any]) -> str:
 
 
 def status_name(task: Dict[str, Any]) -> str:
+    task_scope = task.get('task_scope') or 'execution_run'
     status = task.get('status')
+    if task_scope == 'project_base' and status == 'done':
+        return '进行中'
     if status == 'done':
         return '已完成'
     if status == 'waiting_reviewer':
@@ -331,7 +334,9 @@ def project_delivery(task: Dict[str, Any]) -> str:
 
 
 def project_note(task: Dict[str, Any]) -> str:
+    scope = task.get('task_scope') or 'execution_run'
     parts = [
+        f"任务层级: {scope}",
         f"目标: {task.get('goal') or '-'}",
         f"阶段: {task.get('phase') or '-'} / {task.get('status') or '-'}",
         f"当前负责人: {current_owner(task) or '-'}",
