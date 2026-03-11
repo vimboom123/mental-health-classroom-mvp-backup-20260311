@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+from typing import Optional
 
 from studio_common import (
     add_event,
@@ -40,6 +41,43 @@ NOTIFY_PY = os.path.join(BASE_DIR, 'scripts', 'studio_notify.py')
 
 def call(script, *args, check=True):
     return subprocess.run([sys.executable, script, *args], check=check, capture_output=True, text=True)
+
+
+def normalize_quality_mode(value):
+    raw = (value or '').strip().lower()
+    if raw in {'quality_first', 'quality-first', 'high', 'highest'}:
+        return 'strict'
+    if raw in {'default', 'normal'}:
+        return 'balanced'
+    if raw in {'fast', 'performance'}:
+        return 'speed'
+    return raw or None
+
+
+EXECUTION_RUN_HINTS = (
+    'execution run',
+    'execution_run',
+    'execution-run',
+    'restart',
+    'rerun',
+    '重新拉起',
+    '重新启动',
+    '重新开始',
+    'follow-up',
+    'follow up',
+)
+PROJECT_BASE_HINTS = (
+    '持续推进',
+    '项目底座',
+    'project base',
+    '长期跟踪',
+)
+PROJECT_BASE_NAME_HINTS = ('planning', 'project', '项目')
+
+
+def has_any_hint(text, hints):
+    haystack = (text or '').strip().lower()
+    return any(hint in haystack for hint in hints)
 
 
 def delivery_standard(task_type: str) -> str:
@@ -104,9 +142,11 @@ def ensure_project_traces(task_id: str, *, force_notion: bool = True) -> None:
     call(TASK_PY, 'log', task_id, 'studio_start: notion base and local status trace synced', check=False)
 
 
-def resume_task_if_exists(args: argparse.Namespace) -> str:
+def resume_task_if_exists(args: argparse.Namespace, *, preferred_scope: Optional[str] = None) -> str:
     artifacts = normalize_paths((args.artifact or []) + ([args.doc_path] if args.doc_path else []))
     workdir = normalize_path(args.workdir)
+    incoming_quality_mode = normalize_quality_mode(getattr(args, 'quality_mode', None))
+    incoming_quality_priority = (getattr(args, 'quality_priority', None) or '').strip() or None
     with task_state_lock():
         data = load_tasks()
         task = find_resume_candidate(
@@ -116,13 +156,15 @@ def resume_task_if_exists(args: argparse.Namespace) -> str:
             project_name=args.project_name or args.title,
             workdir=workdir,
             artifacts=artifacts,
+            preferred_scope=preferred_scope,
         )
         if not task:
             return ''
 
-        task['title'] = args.title
-        task['goal'] = args.goal
         ensure_studio_metadata(task)
+        if (task.get('task_scope') or 'execution_run') != 'project_base':
+            task['title'] = args.title
+            task['goal'] = args.goal
         project = ensure_project(task)
         project['name'] = args.project_name or project.get('name') or args.title
         execution = ensure_execution(task)
@@ -142,6 +184,14 @@ def resume_task_if_exists(args: argparse.Namespace) -> str:
                 'target': args.notify_target,
                 'policy': args.notify_policy,
             }
+        if incoming_quality_mode:
+            task['quality_mode'] = incoming_quality_mode
+        elif not task.get('quality_mode'):
+            task['quality_mode'] = 'strict'
+        if incoming_quality_priority is not None:
+            task['quality_priority'] = incoming_quality_priority
+        elif not str(task.get('quality_priority') or '').strip():
+            task['quality_priority'] = 'quality' if task.get('quality_mode') == 'strict' else task.get('quality_mode')
         ensure_notify(task)
         ensure_notify_state(task)
         sync_execution_artifacts(task)
@@ -161,11 +211,37 @@ def infer_task_scope(args: argparse.Namespace) -> str:
     explicit = getattr(args, 'task_scope', None)
     if explicit:
         return explicit
-    project_name = (args.project_name or args.title or '').strip().lower()
-    goal = (args.goal or '').strip().lower()
-    if any(key in project_name for key in ['planning', 'project', '项目']) or any(key in goal for key in ['持续推进', '项目底座', 'project base', '长期跟踪']):
+    title = (args.title or '').strip()
+    goal = (args.goal or '').strip()
+    combined = '\n'.join(part for part in [title, goal] if part)
+    if has_any_hint(combined, EXECUTION_RUN_HINTS):
+        return 'execution_run'
+    if has_any_hint(combined, PROJECT_BASE_HINTS):
+        return 'project_base'
+    projectish = (args.project_name or args.title or '').strip().lower()
+    if any(key in projectish for key in PROJECT_BASE_NAME_HINTS):
         return 'project_base'
     return 'execution_run'
+
+
+def infer_parent_task_id(args: argparse.Namespace, *, task_scope: str) -> str:
+    explicit = (getattr(args, 'parent_task_id', None) or '').strip()
+    if explicit:
+        return explicit
+    if task_scope != 'execution_run':
+        return ''
+    artifacts = normalize_paths((args.artifact or []) + ([args.doc_path] if args.doc_path else []))
+    workdir = normalize_path(args.workdir)
+    with task_state_lock():
+        data = load_tasks()
+        parent = find_resume_candidate(
+            data,
+            project_name=args.project_name or args.title,
+            workdir=workdir,
+            artifacts=artifacts,
+            preferred_scope='project_base',
+        )
+        return parent.get('id') if parent else ''
 
 
 def main():
@@ -176,6 +252,7 @@ def main():
     parser.add_argument('goal')
     parser.add_argument('--project-name')
     parser.add_argument('--task-scope', choices=['execution_run', 'project_base'])
+    parser.add_argument('--parent-task-id')
     parser.add_argument('--artifact', action='append')
     parser.add_argument('--doc-path')
     parser.add_argument('--workdir')
@@ -184,17 +261,23 @@ def main():
     parser.add_argument('--notify-target')
     parser.add_argument('--notify-channel', default='telegram')
     parser.add_argument('--notify-policy', default='milestones')
+    parser.add_argument('--quality-mode')
+    parser.add_argument('--quality-priority')
+    parser.add_argument('--execution-mode', choices=['serial', 'parallel'], default='serial')
+    parser.add_argument('--serial-queue-json')
+    parser.add_argument('--agent-plan-json')
     parser.add_argument('--background', dest='background', action='store_true', default=True)
     parser.add_argument('--foreground', dest='background', action='store_false')
     args = parser.parse_args()
 
+    inferred_scope = infer_task_scope(args)
     resumed = False
-    task_id = resume_task_if_exists(args)
+    task_id = resume_task_if_exists(args, preferred_scope=inferred_scope)
     if task_id:
         resumed = True
         call(TASK_PY, 'log', task_id, 'studio_start: resumed existing task record', check=False)
     else:
-        inferred_scope = infer_task_scope(args)
+        parent_task_id = infer_parent_task_id(args, task_scope=inferred_scope)
         cmd = [
             sys.executable, TASK_PY, 'create',
             '--title', args.title,
@@ -207,8 +290,13 @@ def main():
             '--owner', 'main-agent',
             '--log', 'studio_start: task created and handed to studio service',
         ]
+        quality_mode = normalize_quality_mode(args.quality_mode) or 'strict'
+        quality_priority = (args.quality_priority or '').strip() or ('quality' if quality_mode == 'strict' else quality_mode)
+        cmd.extend(['--quality-mode', quality_mode, '--quality-priority', quality_priority])
         if args.project_name:
             cmd.extend(['--project-name', args.project_name])
+        if parent_task_id:
+            cmd.extend(['--parent-task-id', parent_task_id])
         for path in args.artifact or []:
             cmd.extend(['--artifact', path])
         if args.doc_path:
@@ -227,8 +315,48 @@ def main():
             ])
         task_id = subprocess.check_output(cmd, text=True).strip()
 
-    for script in (ROLES_PY, ACTIVE_ROLES_PY, NEXT_ACTIONS_PY, DISPATCH_PLAN_PY):
-        subprocess.run([sys.executable, script, task_id], check=True)
+    with task_state_lock():
+        data = load_tasks()
+        task = find_task(data, task_id)
+        if task:
+            task['execution_mode'] = args.execution_mode or 'serial'
+            if args.agent_plan_json:
+                try:
+                    task['agent_plan'] = json.loads(args.agent_plan_json)
+                    task['lock_agent_plan'] = True
+                except Exception as exc:
+                    raise SystemExit(f'agent-plan-json parse failed: {exc}')
+            if args.serial_queue_json:
+                try:
+                    queue = json.loads(args.serial_queue_json)
+                    task['serial_queue'] = queue
+                    task['current_serial_index'] = 0
+                    if (task.get('execution_mode') or 'serial') == 'serial' and queue:
+                        task['active_roles'] = [queue[0]]
+                        task['next_actions'] = [
+                            {
+                                'role': queue[0].get('role'),
+                                'agent': queue[0].get('agent'),
+                                'action': queue[0].get('action'),
+                                'required': queue[0].get('required'),
+                            }
+                        ]
+                except Exception as exc:
+                    raise SystemExit(f'serial-queue-json parse failed: {exc}')
+            task['updated_at'] = now_iso()
+            save_tasks(data)
+
+    with task_state_lock():
+        data = load_tasks()
+        task = find_task(data, task_id)
+        use_custom_serial = bool(task and ((task.get('execution_mode') == 'serial' and task.get('serial_queue')) or task.get('lock_agent_plan')))
+
+    if use_custom_serial:
+        for script in (ACTIVE_ROLES_PY, NEXT_ACTIONS_PY, DISPATCH_PLAN_PY):
+            subprocess.run([sys.executable, script, task_id], check=True)
+    else:
+        for script in (ROLES_PY, ACTIVE_ROLES_PY, NEXT_ACTIONS_PY, DISPATCH_PLAN_PY):
+            subprocess.run([sys.executable, script, task_id], check=True)
 
     append_kickoff_event(task_id, resumed=resumed)
     call(NOTIFY_PY, '--task-id', task_id, check=False)
@@ -237,7 +365,19 @@ def main():
     if args.background:
         subprocess.run([sys.executable, SERVICE_PY, 'ensure', '--interval', '30'], check=True)
     else:
-        subprocess.run([sys.executable, RUNNER_PY, 'tick', '--verbose'], check=True)
+        subprocess.run(
+            [
+                sys.executable,
+                RUNNER_PY,
+                'tick',
+                '--verbose',
+                '--lock-retries',
+                '8',
+                '--lock-retry-delay-ms',
+                '250',
+            ],
+            check=True,
+        )
 
     print(f'TASK_ID={task_id}')
 

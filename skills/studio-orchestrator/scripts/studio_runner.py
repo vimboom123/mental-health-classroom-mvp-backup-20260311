@@ -116,8 +116,29 @@ RECOMMENDATIONS = {
 }
 
 
-def call_py(script, *args, check=True):
-    return subprocess.run([sys.executable, script, *args], check=check, capture_output=True, text=True)
+def int_env(name, default):
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+NOTIFY_SEND_TIMEOUT_SEC = max(5, int_env('STUDIO_NOTIFY_SEND_TIMEOUT_SEC', 90))
+NOTIFY_SUBPROCESS_TIMEOUT_SEC = max(60, int_env('STUDIO_NOTIFY_CALL_TIMEOUT_SEC', NOTIFY_SEND_TIMEOUT_SEC + 30))
+RUNNER_LOCK_RETRY_ATTEMPTS = max(0, int_env('STUDIO_RUNNER_LOCK_RETRIES', 4))
+RUNNER_LOCK_RETRY_DELAY_MS = max(0, int_env('STUDIO_RUNNER_LOCK_RETRY_DELAY_MS', 250))
+
+
+def call_py(script, *args, check=True, timeout=45):
+    cmd = [sys.executable, script, *args]
+    try:
+        # Keep runner non-fragile: collect stderr/stdout instead of letting child errors crash the tick loop.
+        return subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout if isinstance(exc.stdout, str) else ''
+        stderr = exc.stderr if isinstance(exc.stderr, str) else ''
+        stderr = (stderr + f"\ncall_py timeout after {timeout}s: {os.path.basename(script)}").strip()
+        return subprocess.CompletedProcess(cmd, 124, stdout, stderr)
 
 
 def acquire_lock(blocking=False):
@@ -136,6 +157,21 @@ def acquire_lock(blocking=False):
     fd.write(str(os.getpid()))
     fd.flush()
     return fd
+
+
+def acquire_lock_with_retry(*, blocking=False, retries=0, delay_ms=250):
+    retries = max(0, int(retries or 0))
+    delay_ms = max(0, int(delay_ms or 0))
+    busy_retries = 0
+    while True:
+        fd = acquire_lock(blocking=blocking)
+        if fd is not None:
+            return fd, busy_retries
+        if busy_retries >= retries:
+            return None, busy_retries
+        busy_retries += 1
+        if delay_ms > 0:
+            time.sleep(delay_ms / 1000.0)
 
 
 def refresh_runner_state(mode, **extra):
@@ -163,16 +199,64 @@ def infer_progress(task_type, phase):
     }
 
 
+def parse_ts(value):
+    if not value:
+        return 0.0
+    try:
+        dt = datetime.fromisoformat(str(value))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.timestamp()
+    except Exception:
+        return 0.0
+
+
+def needs_periodic_project_sync(task, *, now_ts=None):
+    now_ts = now_ts or datetime.now(timezone.utc).timestamp()
+    notion = task.get('notion') or {}
+    status_trace = task.get('status_trace') or {}
+    reporting = task.get('reporting') or {}
+    status = task.get('status')
+    if status in {'blocked', 'waiting_user', 'failed'}:
+        # Non-done terminal states deserve tighter sync for visibility.
+        interval = 300
+    elif status in {'done', 'cancelled'}:
+        interval = 3600
+    else:
+        interval = 600
+    last_sync = max(
+        parse_ts(notion.get('last_sync_at')),
+        parse_ts(status_trace.get('last_sync_at')),
+        parse_ts(reporting.get('last_report_at')),
+    )
+    if last_sync <= 0:
+        return True
+    return (now_ts - last_sync) >= interval
+
+
 def scheduled_ids(max_active=3):
     res = call_py(SCHEDULER_PY, '--max-active', str(max_active), check=False)
     if res.returncode != 0:
         return None, {'code': res.returncode, 'stdout': res.stdout.strip(), 'stderr': res.stderr.strip()}
-    payload = json.loads(res.stdout or '{}')
+    try:
+        payload = json.loads(res.stdout or '{}')
+    except Exception as exc:
+        return None, {
+            'code': res.returncode,
+            'stdout': (res.stdout or '').strip(),
+            'stderr': (res.stderr or '').strip(),
+            'parse_error': str(exc),
+        }
     return {item['id'] for item in payload.get('selected', [])}, payload
 
 
 def refresh_supporting_state(task_id):
-    call_py(ROLES_PY, task_id, check=False)
+    data, task = load_task(task_id)
+    if not task:
+        return
+    use_custom_serial = bool(((task.get('execution_mode') == 'serial' and task.get('serial_queue')) or task.get('lock_agent_plan')))
+    if not use_custom_serial:
+        call_py(ROLES_PY, task_id, check=False)
     call_py(ACTIVE_ROLES_PY, task_id, check=False)
     call_py(NEXT_ACTIONS_PY, task_id, check=False)
     call_py(DISPATCH_PLAN_PY, task_id, check=False)
@@ -272,6 +356,16 @@ def infer_done_phase(task):
 
 
 def infer_done_next(task):
+    if (task.get('execution_mode') or 'serial') == 'serial' and (task.get('serial_queue') or []):
+        queue = task.get('serial_queue') or []
+        idx = int(task.get('current_serial_index') or 0)
+        if 0 <= idx < len(queue):
+            current = queue[idx]
+            current_label = f"{current.get('agent')} / {current.get('role')}"
+            if idx + 1 < len(queue):
+                nxt = queue[idx + 1]
+                return f"当前执行：{current_label}；完成后自动推进到 {nxt.get('agent')} / {nxt.get('role')}"
+            return f"当前执行：{current_label}；这是串行队列最后一棒，完成后进入下一阶段"
     task_type = task.get('type')
     if task_type == 'doc':
         return '开始并单 reviewer 意见'
@@ -343,6 +437,10 @@ def phase_ready(task):
     items = dispatch_items(task)
     if not items:
         return True
+    if (task.get('execution_mode') or 'serial') == 'serial' and (task.get('serial_queue') or []):
+        current_idx = int(task.get('current_serial_index') or 0)
+        if current_idx < len(task.get('serial_queue') or []):
+            return False
     required = required_items(task)
     if required:
         if any((item.get('status') or 'planned') in {'planned', 'queued', 'running'} for item in required):
@@ -404,9 +502,14 @@ def maybe_launch_queued(task_id):
     if not task:
         return []
     outputs = []
+    launched_one = False
+    serial_mode = (task.get('execution_mode') or 'serial') == 'serial'
     for item in dispatch_items(task):
         if item.get('status') == 'queued':
             outputs.append(call_py(DISPATCH_LAUNCH_PY, task_id, item.get('id'), check=False))
+            launched_one = True
+            if serial_mode:
+                break
     return outputs
 
 
@@ -421,8 +524,11 @@ def maybe_poll_running(task_id):
     return outputs
 
 
-def maybe_send_notifications(task_id):
-    return call_py(NOTIFY_PY, '--task-id', task_id, check=False)
+def maybe_send_notifications(task_id, min_interval=0):
+    args = ['--task-id', task_id, '--send-timeout', str(NOTIFY_SEND_TIMEOUT_SEC)]
+    if int(min_interval or 0) > 0:
+        args.extend(['--min-interval', str(int(min_interval))])
+    return call_py(NOTIFY_PY, *args, check=False, timeout=NOTIFY_SUBPROCESS_TIMEOUT_SEC)
 
 
 def sync_project_state(task_id, *, force_notion=False):
@@ -439,6 +545,9 @@ def sync_project_state(task_id, *, force_notion=False):
 
 def advance_task(task):
     if (task.get('task_scope') or 'execution_run') == 'project_base':
+        refresh_supporting_state(task['id'])
+        return None
+    if (task.get('execution_mode') or 'serial') == 'serial' and (task.get('serial_queue') or []):
         return None
     task_type = 'doc_review_only' if task.get('type') == 'doc' and task.get('mode') == 'review_only' else (task.get('type') or 'general')
     phase = task.get('phase') or 'intake'
@@ -495,21 +604,49 @@ def maybe_block_missing(task):
     return reason
 
 
-def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None):
+def tick_once(
+    verbose=False,
+    notify_min_interval=300,
+    max_active=3,
+    lock_fd=None,
+    lock_retries=RUNNER_LOCK_RETRY_ATTEMPTS,
+    lock_retry_delay_ms=RUNNER_LOCK_RETRY_DELAY_MS,
+):
     temp_lock = None
+    recovered_lock_retries = 0
     if lock_fd is None:
-        temp_lock = acquire_lock(blocking=False)
+        temp_lock, recovered_lock_retries = acquire_lock_with_retry(
+            blocking=False,
+            retries=lock_retries,
+            delay_ms=lock_retry_delay_ms,
+        )
         if temp_lock is None:
-            payload = {'skipped': True, 'reason': 'runner lock busy'}
+            payload = {
+                'skipped': True,
+                'reason': 'runner lock busy',
+                'lock_retries': max(0, int(lock_retries or 0)),
+                'lock_retry_delay_ms': max(0, int(lock_retry_delay_ms or 0)),
+                'waited_ms': max(0, int(recovered_lock_retries or 0)) * max(0, int(lock_retry_delay_ms or 0)),
+            }
             print(json.dumps(payload, ensure_ascii=False, indent=2) if verbose else json.dumps(payload, ensure_ascii=False))
-            return
+            return payload
     changed = []
     side_effects = []
     notify_task_ids = set()
     now = now_iso()
+    now_ts = datetime.now(timezone.utc).timestamp()
+    if recovered_lock_retries > 0:
+        side_effects.append({
+            'runner_lock_retry': {
+                'busy_retries': recovered_lock_retries,
+                'lock_retry_delay_ms': max(0, int(lock_retry_delay_ms or 0)),
+            }
+        })
 
     ids, sched_payload = scheduled_ids(max_active=max_active)
     side_effects.append({'scheduler': sched_payload})
+    if ids is None:
+        side_effects.append({'scheduler_degraded': True, 'reason': 'scheduler unavailable, fallback to local iteration'})
 
     data = load_tasks()
     for task in data.get('tasks', []):
@@ -525,11 +662,13 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
             if not task:
                 continue
         if task.get('status') in TERMINAL_STATUSES:
-            sync_res = sync_project_state(task_id)
-            side_effects.append({'task_id': task_id, 'project_state': {
-                'notion': sync_res['notion'].stdout.strip(),
-                'status_trace': sync_res['status_trace'].stdout.strip(),
-            }})
+            should_sync = pending_events(task) or needs_periodic_project_sync(task, now_ts=now_ts)
+            if should_sync:
+                sync_res = sync_project_state(task_id)
+                side_effects.append({'task_id': task_id, 'project_state': {
+                    'notion': sync_res['notion'].stdout.strip(),
+                    'status_trace': sync_res['status_trace'].stdout.strip(),
+                }})
             if pending_events(task):
                 notify_task_ids.add(task_id)
             continue
@@ -571,6 +710,14 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
         data, task = load_task(task_id)
         if not task:
             continue
+
+        if (task.get('execution_mode') or 'serial') == 'serial' and not dispatch_items(task) and (task.get('serial_queue') or []):
+            current_idx = int(task.get('current_serial_index') or 0)
+            if current_idx < len(task.get('serial_queue') or []):
+                refresh_supporting_state(task_id)
+                data, task = load_task(task_id)
+                if not task:
+                    continue
 
         if task.get('phase') == 'pm_wrapup' and phase_ready(task):
             completion_res = maybe_complete_pm_wrapup(task)
@@ -614,37 +761,7 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
             if stall_payload.get('stalled'):
                 side_effects.append({'task_id': task_id, 'stalled': stall_payload})
 
-        if task.get('phase') == 'pm_wrapup' and phase_ready(task):
-            completion_res = maybe_complete_pm_wrapup(task)
-            completion_side_effect = {'suggest': completion_res['suggest'].stdout.strip(), 'gate': completion_res['gate'].stdout.strip()}
-            if not completion_res['gate_payload'].get('ok'):
-                missing = [item.get('reason') for item in completion_res['gate_payload'].get('checks', []) if not item.get('ok') and item.get('reason')]
-                if missing:
-                    completion_side_effect['missing'] = missing
-            side_effects.append({'task_id': task_id, 'completion': completion_side_effect})
-            data, task = load_task(task_id)
-            if not task:
-                continue
-            sync_res = sync_project_state(task_id, force_notion=True)
-            side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
-            notify_task_ids.add(task_id)
-        elif phase_ready(task):
-            transition_gate = phase_transition_gate(task)
-            if not transition_gate.get('ok'):
-                side_effects.append({'task_id': task_id, 'phase_hold': transition_gate})
-                sync_res = sync_project_state(task_id)
-                side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
-                if pending_events(task):
-                    notify_task_ids.add(task_id)
-                continue
-            res = advance_task(task)
-            if res is not None:
-                changed.append({'task_id': task_id, 'advanced_from': task.get('phase')})
-                side_effects.append({'task_id': task_id, 'advance': {'code': res.returncode, 'stdout': res.stdout.strip(), 'stderr': res.stderr.strip()}})
-            sync_res = sync_project_state(task_id, force_notion=True)
-            side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
-            notify_task_ids.add(task_id)
-        elif pending_events(task):
+        if pending_events(task):
             sync_res = sync_project_state(task_id)
             side_effects.append({'task_id': task_id, 'project_state': {'notion': sync_res['notion'].stdout.strip(), 'status_trace': sync_res['status_trace'].stdout.strip()}})
             notify_task_ids.add(task_id)
@@ -654,7 +771,7 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
         for task in latest.get('tasks', []):
             if task.get('id') in notify_task_ids or pending_events(task):
                 if pending_events(task):
-                    res = maybe_send_notifications(task.get('id'))
+                    res = maybe_send_notifications(task.get('id'), notify_min_interval)
                     side_effects.append({
                         'task_id': task.get('id'),
                         'notify': {
@@ -669,7 +786,7 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
         for task in latest.get('tasks', []):
             if pending_events(task):
                 retried = True
-                res = maybe_send_notifications(task.get('id'))
+                res = maybe_send_notifications(task.get('id'), notify_min_interval)
                 side_effects.append({
                     'task_id': task.get('id'),
                     'notify_retry': {
@@ -690,16 +807,42 @@ def tick_once(verbose=False, notify_min_interval=300, max_active=3, lock_fd=None
     print(json.dumps(payload, ensure_ascii=False, indent=2) if verbose else json.dumps(changed, ensure_ascii=False))
     if temp_lock is not None:
         temp_lock.close()
+    return payload
 
 
-def daemon_loop(interval, max_ticks, verbose=False, notify_min_interval=300, max_active=3):
-    lock_fd = acquire_lock(blocking=False)
+def daemon_loop(
+    interval,
+    max_ticks,
+    verbose=False,
+    notify_min_interval=300,
+    max_active=3,
+    lock_retries=RUNNER_LOCK_RETRY_ATTEMPTS,
+    lock_retry_delay_ms=RUNNER_LOCK_RETRY_DELAY_MS,
+):
+    lock_fd, busy_retries = acquire_lock_with_retry(
+        blocking=False,
+        retries=lock_retries,
+        delay_ms=lock_retry_delay_ms,
+    )
     if lock_fd is None:
         raise SystemExit('studio runner already active')
-    refresh_runner_state('daemon', started_at=now_iso(), interval=interval)
+    refresh_runner_state(
+        'daemon',
+        started_at=now_iso(),
+        interval=interval,
+        lock_retry_attempts=busy_retries,
+        lock_retry_delay_ms=max(0, int(lock_retry_delay_ms or 0)),
+    )
     ticks = 0
     while True:
-        tick_once(verbose=verbose, notify_min_interval=notify_min_interval, max_active=max_active, lock_fd=lock_fd)
+        tick_once(
+            verbose=verbose,
+            notify_min_interval=notify_min_interval,
+            max_active=max_active,
+            lock_fd=lock_fd,
+            lock_retries=lock_retries,
+            lock_retry_delay_ms=lock_retry_delay_ms,
+        )
         ticks += 1
         refresh_runner_state('daemon', started_at=load_json(RUNNER_STATE_FILE, {}).get('started_at') or now_iso(), interval=interval)
         if max_ticks and ticks >= max_ticks:
@@ -715,18 +858,36 @@ def main():
     tick.add_argument('--verbose', action='store_true')
     tick.add_argument('--notify-min-interval', type=int, default=300)
     tick.add_argument('--max-active', type=int, default=3)
+    tick.add_argument('--lock-retries', type=int, default=RUNNER_LOCK_RETRY_ATTEMPTS)
+    tick.add_argument('--lock-retry-delay-ms', type=int, default=RUNNER_LOCK_RETRY_DELAY_MS)
     daemon = sub.add_parser('daemon')
     daemon.add_argument('--interval', type=int, default=30)
     daemon.add_argument('--max-ticks', type=int, default=0)
     daemon.add_argument('--verbose', action='store_true')
     daemon.add_argument('--notify-min-interval', type=int, default=300)
     daemon.add_argument('--max-active', type=int, default=3)
+    daemon.add_argument('--lock-retries', type=int, default=RUNNER_LOCK_RETRY_ATTEMPTS)
+    daemon.add_argument('--lock-retry-delay-ms', type=int, default=RUNNER_LOCK_RETRY_DELAY_MS)
     args = parser.parse_args()
     if args.command == 'tick':
         refresh_runner_state('tick')
-        tick_once(verbose=args.verbose, notify_min_interval=args.notify_min_interval, max_active=args.max_active)
+        tick_once(
+            verbose=args.verbose,
+            notify_min_interval=args.notify_min_interval,
+            max_active=args.max_active,
+            lock_retries=args.lock_retries,
+            lock_retry_delay_ms=args.lock_retry_delay_ms,
+        )
     else:
-        daemon_loop(args.interval, args.max_ticks, verbose=args.verbose, notify_min_interval=args.notify_min_interval, max_active=args.max_active)
+        daemon_loop(
+            args.interval,
+            args.max_ticks,
+            verbose=args.verbose,
+            notify_min_interval=args.notify_min_interval,
+            max_active=args.max_active,
+            lock_retries=args.lock_retries,
+            lock_retry_delay_ms=args.lock_retry_delay_ms,
+        )
 
 
 if __name__ == '__main__':
