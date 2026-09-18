@@ -383,7 +383,7 @@ async function callQwenReply(message, riskLevel, moduleId, practiceId) {
         body: JSON.stringify({
           model: modelName,
           temperature: 0.5,
-          max_tokens: 220,
+          max_tokens: Number(process.env.TUTOR_MAX_TOKENS || 900),
           messages: [
             {
               role: 'system',
@@ -415,7 +415,13 @@ async function callQwenReply(message, riskLevel, moduleId, practiceId) {
       const payload = await response.json();
       const content = payload?.choices?.[0]?.message?.content?.trim();
       return { content: content || null, modelNotFound: false };
-    } catch {
+    } catch (error) {
+      // 之前这里是一个裸 catch，超时/鉴权/网络错误全部被静默吞掉，
+      // 表现是「助教看起来正常但永远走本地规则」，线上无从排查。
+      console.warn(
+        `[tutor] model request failed (model=${modelName}):`,
+        (error && (error.name || error.message)) || error
+      );
       return { content: null, modelNotFound: false };
     } finally {
       clearTimeout(timeout);
